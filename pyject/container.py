@@ -15,7 +15,9 @@ T = TypeVar("T")
 class Container(BaseContainer, ContextInstanceMixin):
     def __init__(self) -> None:
         self._dependency_storage: List[DependencyWrapper] = []
-        self._context_dependency_storage: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(f"_context_storage_{id(self)}")
+        self._context_dependency_storage: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(
+            f"_context_storage_{id(self)}"
+        )
 
         self.add_constant(Container, self)
         self.set_current(self)
@@ -65,7 +67,7 @@ class Container(BaseContainer, ContextInstanceMixin):
                 dependency_wrappers.append(dependency_wrapper.target)
         return dependency_wrappers
 
-    def _get_implementation_attr(self, signatures: inspect.Signature, ) -> Dict[str, Any]:
+    def _get_implementation_attr(self, signatures: inspect.Signature) -> Dict[str, Any]:
         """Get resolved object attributes"""
         callable_object_arguments = {}
         for attr_name, parameter in signatures.parameters.items():
@@ -75,7 +77,7 @@ class Container(BaseContainer, ContextInstanceMixin):
             annotation = parameter.annotation
             if _is_collection_type(annotation):
                 field_attributes = []
-                inner_type, = annotation.__args__
+                (inner_type,) = annotation.__args__
                 for dependency in self._get_raw_dependency(inner_type):
                     field_attributes.append(self._get_implementation(dependency.target))
                 callable_object_arguments[attr_name] = field_attributes
@@ -86,10 +88,12 @@ class Container(BaseContainer, ContextInstanceMixin):
         return callable_object_arguments
 
     @overload
-    def _get_implementation(self, implementation: Type[T]) -> T: ...
+    def _get_implementation(self, implementation: Type[T]) -> T:
+        ...
 
     @overload
-    def _get_implementation(self, implementation: T) -> T:  ...
+    def _get_implementation(self, implementation: T) -> T:
+        ...
 
     def _get_implementation(self, implementation):
         signature = get_signature_to_implementation(implementation)

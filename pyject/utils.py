@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Type, List, Iterator
+from typing import Any, TypeVar, Type
 import contextvars
 
 T = TypeVar("T")

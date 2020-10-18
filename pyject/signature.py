@@ -9,7 +9,10 @@ def get_typed_signature(call: Callable) -> inspect.Signature:
     globalns = getattr(call, "__globals__", {})
     typed_params = [
         inspect.Parameter(
-            name=param.name, kind=param.kind, default=param.default, annotation=get_typed_annotation(param, globalns),
+            name=param.name,
+            kind=param.kind,
+            default=param.default,
+            annotation=get_typed_annotation(param, globalns),
         )
         for param in signature.parameters.values()
     ]
@@ -17,7 +20,10 @@ def get_typed_signature(call: Callable) -> inspect.Signature:
     return typed_signature
 
 
-def get_typed_annotation(param: inspect.Parameter, globalns: Dict[str, Any]) -> Any:
+def get_typed_annotation(
+    param: inspect.Parameter,
+    globalns: Dict[str, Any],
+) -> Any:
     annotation = param.annotation
     if isinstance(annotation, str):
         try:
