@@ -4,7 +4,6 @@ import re
 import setuptools
 
 
-requirements = ["pydantic~=1.6.1"]
 requirements_dev = ["pytest~=6.1.1", "mypy~=0.790", "black~=20.8b1"]
 
 
@@ -47,7 +46,6 @@ setuptools.setup(
     description="Light ioc container for you",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    install_requires=requirements,
     extras_require={
         "dev": requirements_dev,
     },

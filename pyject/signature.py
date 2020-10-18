@@ -1,6 +1,10 @@
 import inspect
 from typing import Callable, Dict, Any, Optional
-from pydantic.typing import ForwardRef, evaluate_forwardref
+from typing import ForwardRef
+
+
+def evaluate_forwardref(type_: ForwardRef, globalns: Any, localns: Any) -> Any:
+    return type_._evaluate(globalns, localns)
 
 
 def get_typed_signature(call: Callable) -> inspect.Signature:
@@ -20,10 +24,7 @@ def get_typed_signature(call: Callable) -> inspect.Signature:
     return typed_signature
 
 
-def get_typed_annotation(
-    param: inspect.Parameter,
-    globalns: Dict[str, Any],
-) -> Any:
+def get_typed_annotation(param: inspect.Parameter, globalns: Dict[str, Any]) -> Any:
     annotation = param.annotation
     if isinstance(annotation, str):
         try:
