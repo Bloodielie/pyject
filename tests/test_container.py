@@ -96,3 +96,8 @@ def test_get_target_attributes(container_with_singleton_classes: Container):
         assert isinstance(duck, DuckInterface)
 
     assert isinstance(func_values[1], DuckInterface)
+
+
+def test_len(container):
+    container.add_transient(DuckInterface, DuckC)
+    assert len(container) == 2

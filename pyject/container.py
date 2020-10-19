@@ -125,3 +125,6 @@ class Container(BaseContainer, ContextInstanceMixin):
             for dependency_wrapper in storage:
                 if _check_annotation(annotation, dependency_wrapper.type_):
                     yield dependency_wrapper
+
+    def __len__(self) -> int:
+        return len(self._dependency_storage) + len(self._context_dependency_storage.get([]))
