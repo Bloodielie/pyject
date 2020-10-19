@@ -81,3 +81,18 @@ def test_list_attr(container_with_singleton_classes: Container):
     ducks_list_1 = container_with_singleton_classes.get("ducks_list")
     ducks_list_2 = container_with_singleton_classes.get_all(DuckInterface)
     assert ducks_list_1 == ducks_list_2
+
+
+def test_get_target_attributes(container_with_singleton_classes: Container):
+    def test_func(ducks: List[DuckInterface], duck: DuckInterface):
+        return ducks, duck
+
+    func_attributes = container_with_singleton_classes.get_target_attributes(test_func)
+    assert list(func_attributes.keys()) == ["ducks", "duck"]
+
+    func_values = list(func_attributes.values())
+    assert isinstance(func_values[0], list)
+    for duck in func_values[0]:
+        assert isinstance(duck, DuckInterface)
+
+    assert isinstance(func_values[1], DuckInterface)

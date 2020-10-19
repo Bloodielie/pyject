@@ -67,10 +67,10 @@ class Container(BaseContainer, ContextInstanceMixin):
                 dependency_wrappers.append(dependency_wrapper.target)
         return dependency_wrappers
 
-    def _get_implementation_attr(self, signatures: inspect.Signature) -> Dict[str, Any]:
-        """Get resolved object attributes"""
+    def _get_implementation_attr(self, signature: inspect.Signature) -> Dict[str, Any]:
+        """Get resolved signature attributes"""
         callable_object_arguments = {}
-        for attr_name, parameter in signatures.parameters.items():
+        for attr_name, parameter in signature.parameters.items():
             if attr_name == "self":
                 continue
 
@@ -101,6 +101,10 @@ class Container(BaseContainer, ContextInstanceMixin):
             attr = self._get_implementation_attr(signature)
             implementation = implementation(**attr)
         return implementation
+
+    def get_target_attributes(self, target: Any) -> Dict[str, Any]:
+        """Get resolved object attributes"""
+        return self._get_implementation_attr(get_typed_signature(target))
 
     def _get_raw_dependency(self, annotation: Any) -> Iterator[DependencyWrapper]:
         """Get unresolved object/class"""

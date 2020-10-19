@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar
+from typing import Type, TypeVar, List, Any, Dict
 
 T = TypeVar("T")
 
@@ -24,3 +24,11 @@ class BaseContainer(ABC):
     @abstractmethod
     def get(self, annotation: Type[T]) -> T:
         """Get object from container"""
+
+    @abstractmethod
+    def get_all(self, annotation: Type[T]) -> List[T]:
+        """Get all object from container"""
+
+    @abstractmethod
+    def get_target_attributes(self, target: Any) -> Dict[str, Any]:
+        """Get resolved object attributes"""
