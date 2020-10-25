@@ -3,24 +3,17 @@ import contextvars
 
 T = TypeVar("T")
 
-collection_type_names = ["Set", "List", "Tuple", "FrozenSet"]
-
 
 def _check_annotation(annotation: Any, dependency: Any) -> bool:
     try:
         if issubclass(annotation, dependency):
             return True
     except TypeError:
-        if annotation == dependency:
-            return True
-    return False
-
-
-def _is_collection_type(annotation: Any) -> bool:
-    annotation_type_name = getattr(annotation, "_name", None)
-    if annotation_type_name is not None:
-        for collection_type_name in collection_type_names:
-            if annotation_type_name == collection_type_name:
+        try:
+            if isinstance(annotation, dependency):
+                return True
+        except TypeError:
+            if annotation == dependency:
                 return True
     return False
 

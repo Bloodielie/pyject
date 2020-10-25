@@ -1,6 +1,7 @@
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 from pyject.container import Container
 from pyject.models import Scope
 from pyject.exception import DependencyNotFound
-from pyject.base import BaseContainer
+from pyject.base import IContainer
+from pyject.base import IContainer as BaseContainer

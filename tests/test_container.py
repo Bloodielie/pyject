@@ -6,6 +6,7 @@ from pytest import fixture, raises
 
 from pyject.container import Container
 from tests.classes import QuackBehavior, Sqeak, DuckInterface, DuckA, DuckB, DuckC, duck_d
+from contextvars import copy_context
 
 
 @fixture()
@@ -73,6 +74,28 @@ def test_singleton_obj(container_with_singleton_classes):
     assert duck_1.__class__ == duck_2.__class__
 
 
+def test_context_scope(container):
+    container.add_context(QuackBehavior, Sqeak)
+    squeak = container.get(QuackBehavior)
+    assert isinstance(squeak, QuackBehavior)
+    assert squeak != container.get(QuackBehavior)
+
+    def test_1(container):
+        container.add_context(DuckInterface, DuckA)
+        duck = container.get(DuckInterface)
+        assert isinstance(duck, DuckInterface)
+
+    def test_2(container):
+        container.get(DuckInterface)
+
+    ctx_1 = copy_context()
+    ctx_1.run(test_1, container)
+
+    ctx_2 = copy_context()
+    with raises(DependencyNotFound):
+        ctx_2.run(test_2, container)
+
+
 def test_list_attr(container_with_singleton_classes: Container):
     def test_func(ducks: List[DuckInterface]):
         return ducks
@@ -96,6 +119,9 @@ def test_get_target_attributes(container_with_singleton_classes: Container):
         assert isinstance(duck, DuckInterface)
 
     assert isinstance(func_values[1], DuckInterface)
+
+    class_attributes = container_with_singleton_classes.get_target_attributes(DuckC())
+    assert class_attributes is None
 
 
 def test_len(container):
