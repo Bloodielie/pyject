@@ -1,5 +1,29 @@
 # Benchmark
 
+version-0.1.2
+
+## container.get
+| Scope         | Ops                |
+| ------------- |:------------------:|
+| transient     | 6623    |
+| singleton     | 511665 |
+| big_transient  | 5858 |
+| big_singleton  | 508240 |
+
+*Singleton scope is faster in 77 times*  
+*With a large number of objects, singleton scope is faster 86 times*  
+
+## container.get_all
+| Scope         | Ops                |
+| ------------- |:------------------:|
+| transient     | 3758    |
+| singleton     | 389158 |
+| big_transient  | 157 |
+| big_singleton  | 41588 |
+
+*Singleton scope is faster in 103 times*  
+*With a large number of objects, singleton scope is faster 264 times* 
+
 version-0.1.0
 
 ## container.get
