@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Iterator
 
 from pyject.exception import DependencyNotFound
 
@@ -127,3 +127,18 @@ def test_get_target_attributes(container_with_singleton_classes: Container):
 def test_len(container):
     container.add_transient(DuckInterface, DuckC)
     assert len(container) == 2
+
+
+def test_iter_typing(container_with_singleton_classes: Container):
+    def test_func(ducks: Iterator[DuckInterface]):
+        return ducks
+
+    container_with_singleton_classes.add_transient("ducks_list", test_func)
+    duck_iterator = container_with_singleton_classes.get("ducks_list")
+    ducks_list_1 = []
+    for duck in duck_iterator:
+        assert isinstance(duck, DuckInterface)
+        ducks_list_1.append(duck)
+
+    ducks_list_2 = container_with_singleton_classes.get_all(DuckInterface)
+    assert ducks_list_1 == ducks_list_2
