@@ -20,10 +20,8 @@ def _check_annotation(annotation: Any, dependency: Any) -> bool:
 
 def check_generic_typing(annotation: Any, collection_type_names: List[Any]) -> bool:
     annotation_type_name = getattr(annotation, "_name", None)
-    if annotation_type_name is not None:
-        for collection_type_name in collection_type_names:
-            if annotation_type_name == collection_type_name:
-                return True
+    if annotation_type_name is not None and annotation_type_name in collection_type_names:
+        return True
     return False
 
 

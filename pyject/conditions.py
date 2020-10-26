@@ -1,7 +1,6 @@
-from typing import List, Any, Optional, Dict, Iterator
+from typing import List, Any, Optional, Dict, Iterator, Sequence
 
 from pyject.base import BaseCondition
-from pyject.models import DependencyWrapper
 from pyject.utils import check_generic_typing
 
 # todo: Added: Optional, Union
@@ -22,9 +21,9 @@ class CollectionCondition(BaseCondition):
             return None
 
         field_attributes = []
-        (inner_type,) = typing.__args__
-        for dependency in self._dependency_storage.get_raw_dependency(inner_type):
-            field_attributes.append(self._resolver.get_implementation(dependency.target))
+        for inner_type in typing.__args__:
+            for dependency in self._dependency_storage.get_raw_dependency(inner_type):
+                field_attributes.append(self._resolver.get_implementation(dependency.target))
         return field_attributes
 
 
@@ -35,12 +34,9 @@ class IteratorCondition(BaseCondition):
         if not check_generic_typing(typing, self._collection_type_names):
             return None
 
-        (inner_type,) = typing.__args__
-        return self._iterator(
-            self._dependency_storage.get_raw_dependency(inner_type), self._resolver.get_implementation
-        )
+        return self._iterator(typing.__args__)
 
-    @staticmethod
-    def _iterator(iterator_for_get_raw_dependencies: Iterator[DependencyWrapper], func_for_resolving_implementation):
-        for dependency in iterator_for_get_raw_dependencies:
-            yield func_for_resolving_implementation(dependency.target)
+    def _iterator(self, typings: Sequence[Any]):
+        for typing in typings:
+            for dependency in self._dependency_storage.get_raw_dependency(typing):
+                yield self._resolver.get_implementation(dependency.target)
