@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Type
+from typing import Any, TypeVar, Type, List
 import contextvars
 
 T = TypeVar("T")
@@ -14,6 +14,15 @@ def _check_annotation(annotation: Any, dependency: Any) -> bool:
                 return True
         except TypeError:
             if annotation == dependency:
+                return True
+    return False
+
+
+def check_generic_typing(annotation: Any, collection_type_names: List[Any]) -> bool:
+    annotation_type_name = getattr(annotation, "_name", None)
+    if annotation_type_name is not None:
+        for collection_type_name in collection_type_names:
+            if annotation_type_name == collection_type_name:
                 return True
     return False
 
