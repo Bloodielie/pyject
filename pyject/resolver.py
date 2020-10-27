@@ -28,11 +28,15 @@ class Resolver(IResolver):
     def get_implementation_attr(self, signature: inspect.Signature) -> Dict[str, Any]:
         """Get resolved signature attributes"""
         callable_object_arguments = {}
-        for attr_name, parameter in signature.parameters.items():
-            if attr_name == "self":
+        for index, (attr_name, parameter) in enumerate(signature.parameters.items()):
+            if attr_name == "self" and index == 0:
                 continue
 
-            attrs = self._find(parameter.annotation)
+            annotation = parameter.annotation
+            if parameter.empty == annotation:
+                annotation = Any
+
+            attrs = self._find(annotation)
             if attrs is None:
                 continue
             callable_object_arguments[attr_name] = attrs
