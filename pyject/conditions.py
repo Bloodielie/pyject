@@ -11,7 +11,7 @@ class DefaultCondition(BaseCondition):
     def get_attributes(self, typing: Any) -> Optional[Dict[str, Any]]:
         for dependency in self._dependency_storage.get_raw_dependency(typing):
             return self._resolver.get_implementation(dependency.target)
-        raise DependencyResolvingException()
+        raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
 
 
 class CollectionCondition(BaseCondition):
@@ -26,7 +26,7 @@ class CollectionCondition(BaseCondition):
             for dependency in self._dependency_storage.get_raw_dependency(inner_type):
                 field_attributes.append(self._resolver.get_implementation(dependency.target))
         if not field_attributes:
-            raise DependencyResolvingException()
+            raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
         return field_attributes
 
 
