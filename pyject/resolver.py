@@ -2,7 +2,7 @@ import inspect
 from typing import Dict, Any, TypeVar, Optional, List, Type
 
 from pyject.base import IResolver, BaseCondition
-from pyject.conditions import CollectionCondition, DefaultCondition, IteratorCondition, AnyCondition
+from pyject.conditions import CollectionCondition, DefaultCondition, IteratorCondition, AnyCondition, UnionCondition
 from pyject.exception import TypingDoesNotMatch
 from pyject.models import DependencyStorage
 from pyject.signature import get_signature_to_implementation
@@ -37,10 +37,7 @@ class Resolver(IResolver):
             if parameter.empty == annotation:
                 annotation = Any
 
-            attrs = self._find(annotation)
-            if attrs is None:
-                continue
-            callable_object_arguments[attr_name] = attrs
+            callable_object_arguments[attr_name] = self._find(annotation)
 
         return callable_object_arguments
 
@@ -67,6 +64,7 @@ class Resolver(IResolver):
     def _setup_base_conditions(self) -> None:
         self.add_condition(AnyCondition)
         self.add_condition(CollectionCondition)
+        self.add_condition(UnionCondition)
         self.add_condition(IteratorCondition)
 
     def _resolve_condition(self, condition: Type[BaseCondition]) -> BaseCondition:

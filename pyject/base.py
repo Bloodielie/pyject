@@ -65,5 +65,5 @@ class BaseCondition(ABC):
         self._resolver = resolver
 
     @abstractmethod
-    def get_attributes(self, typing: Any) -> Optional[Any]:
+    def get_attributes(self, typing: Any) -> Any:
         """Get attributes from container for typing"""

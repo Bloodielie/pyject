@@ -1,4 +1,4 @@
-from typing import Any, TypeVar, Type, Iterable
+from typing import Any, TypeVar, Type, Iterable, Union
 import contextvars
 
 T = TypeVar("T")
@@ -21,6 +21,13 @@ def _check_annotation(annotation: Any, dependency: Any) -> bool:
 def check_generic_typing(annotation: Any, collection_type_names: Iterable[str]) -> bool:
     annotation_type_name = getattr(annotation, "_name", None)
     if annotation_type_name is not None and annotation_type_name in collection_type_names:
+        return True
+    return False
+
+
+def check_union_typing(annotation: Any) -> bool:
+    origin = getattr(annotation, "__origin__", None)
+    if origin is not None and origin is Union:
         return True
     return False
 
