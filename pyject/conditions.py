@@ -1,7 +1,7 @@
 from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn
 
 from pyject.base import BaseCondition
-from pyject.exception import DependencyResolvingException
+from pyject.exception import DependencyResolvingException, TypingDoesNotMatch
 from pyject.utils import check_generic_typing
 
 # todo: Added: Optional, Union
@@ -20,7 +20,7 @@ class AnyCondition(BaseCondition):
 
     def get_attributes(self, typing: Any) -> Optional[NoReturn]:
         if not check_generic_typing(typing, self._type_names_to_check):
-            return None
+            raise TypingDoesNotMatch()
 
         raise DependencyResolvingException(f"Any or empty annotation is not supported")
 
@@ -30,7 +30,7 @@ class CollectionCondition(BaseCondition):
 
     def get_attributes(self, typing: Any) -> Optional[List[Dict[str, Any]]]:
         if not check_generic_typing(typing, self._type_names_to_check):
-            return None
+            raise TypingDoesNotMatch()
 
         field_attributes = []
         for inner_type in typing.__args__:
@@ -46,7 +46,7 @@ class IteratorCondition(BaseCondition):
 
     def get_attributes(self, typing: Any) -> Optional[Iterator[Any]]:
         if not check_generic_typing(typing, self._type_names_to_check):
-            return None
+            raise TypingDoesNotMatch()
 
         return self._iterator(typing.__args__)
 

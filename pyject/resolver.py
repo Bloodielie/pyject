@@ -3,6 +3,7 @@ from typing import Dict, Any, TypeVar, Optional, List, Type
 
 from pyject.base import IResolver, BaseCondition
 from pyject.conditions import CollectionCondition, DefaultCondition, IteratorCondition, AnyCondition
+from pyject.exception import TypingDoesNotMatch
 from pyject.models import DependencyStorage
 from pyject.signature import get_signature_to_implementation
 
@@ -56,10 +57,10 @@ class Resolver(IResolver):
 
     def _find(self, typing: Any) -> Optional[Any]:
         for condition in self._conditions:
-            attrs = condition.get_attributes(typing)
-            if attrs is None:
+            try:
+                return condition.get_attributes(typing)
+            except TypingDoesNotMatch:
                 continue
-            return attrs
 
         return self._default_condition.get_attributes(typing)
 
