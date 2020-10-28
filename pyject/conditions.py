@@ -4,7 +4,7 @@ from pyject.base import BaseCondition
 from pyject.exception import DependencyResolvingException
 from pyject.utils import check_generic_typing
 
-# todo: Added: Optional, Union, Any
+# todo: Added: Optional, Union
 
 
 class DefaultCondition(BaseCondition):
@@ -16,20 +16,20 @@ class DefaultCondition(BaseCondition):
 
 
 class AnyCondition(BaseCondition):
-    _collection_type_names = {"Any"}
+    _type_names_to_check = {"Any"}
 
     def get_attributes(self, typing: Any) -> Optional[NoReturn]:
-        if not check_generic_typing(typing, self._collection_type_names):
+        if not check_generic_typing(typing, self._type_names_to_check):
             return None
 
-        raise DependencyResolvingException(f"Any or no annotation is not supported")
+        raise DependencyResolvingException(f"Any or empty annotation is not supported")
 
 
 class CollectionCondition(BaseCondition):
-    _collection_type_names = {"Set", "List", "Tuple", "FrozenSet", "Sequence"}
+    _type_names_to_check = {"Set", "List", "Tuple", "FrozenSet", "Sequence"}
 
     def get_attributes(self, typing: Any) -> Optional[List[Dict[str, Any]]]:
-        if not check_generic_typing(typing, self._collection_type_names):
+        if not check_generic_typing(typing, self._type_names_to_check):
             return None
 
         field_attributes = []
@@ -42,10 +42,10 @@ class CollectionCondition(BaseCondition):
 
 
 class IteratorCondition(BaseCondition):
-    _collection_type_names = {"Iterator"}
+    _type_names_to_check = {"Iterator"}
 
     def get_attributes(self, typing: Any) -> Optional[Iterator[Any]]:
-        if not check_generic_typing(typing, self._collection_type_names):
+        if not check_generic_typing(typing, self._type_names_to_check):
             return None
 
         return self._iterator(typing.__args__)
