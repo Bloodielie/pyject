@@ -1,6 +1,6 @@
 from typing import List, Iterator
 
-from pyject.exception import DependencyNotFound
+from pyject.exception import DependencyNotFound, DependencyResolvingException
 
 from pytest import fixture, raises
 
@@ -142,3 +142,14 @@ def test_iter_typing(container_with_singleton_classes: Container):
 
     ducks_list_2 = container_with_singleton_classes.get_all(DuckInterface)
     assert ducks_list_1 == ducks_list_2
+
+
+def test_tuping_not_resolving(container_with_singleton_classes: Container):
+    class Test:
+        pass
+
+    def test_func(ducks: List[DuckInterface], a: Test):
+        return ducks, a
+
+    with raises(DependencyResolvingException):
+        container_with_singleton_classes.get_target_attributes(test_func)
