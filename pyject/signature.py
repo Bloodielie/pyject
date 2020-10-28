@@ -40,8 +40,18 @@ def is_default_class(signature: inspect.Signature) -> bool:
     for index, (attr_name, parameter) in enumerate(signature.parameters.items()):
         if (
             (index == 0 and attr_name == "self" and parameter.annotation == parameter.empty)
-            or (index == 1 and attr_name == "args" and parameter.annotation == parameter.empty)
-            or (index == 2 and attr_name == "kwargs" and parameter.annotation == parameter.empty)
+            or (
+                index == 1
+                and parameter.kind == parameter.VAR_POSITIONAL
+                and attr_name == "args"
+                and parameter.annotation == parameter.empty
+            )
+            or (
+                index == 2
+                and parameter.kind == parameter.VAR_KEYWORD
+                and attr_name == "kwargs"
+                and parameter.annotation == parameter.empty
+            )
         ):
             continue
         else:
