@@ -2,7 +2,7 @@ import inspect
 from typing import Dict, Any, TypeVar, Optional, List, Type
 
 from pyject.base import IResolver, BaseCondition
-from pyject.conditions import CollectionCondition, DefaultCondition, IteratorCondition
+from pyject.conditions import CollectionCondition, DefaultCondition, IteratorCondition, AnyCondition
 from pyject.models import DependencyStorage
 from pyject.signature import get_signature_to_implementation
 
@@ -64,6 +64,7 @@ class Resolver(IResolver):
         return self._default_condition.get_attributes(typing)
 
     def _setup_base_conditions(self) -> None:
+        self.add_condition(AnyCondition)
         self.add_condition(CollectionCondition)
         self.add_condition(IteratorCondition)
 

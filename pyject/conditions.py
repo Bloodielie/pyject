@@ -1,4 +1,4 @@
-from typing import List, Any, Optional, Dict, Iterator, Sequence
+from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn
 
 from pyject.base import BaseCondition
 from pyject.exception import DependencyResolvingException
@@ -11,7 +11,18 @@ class DefaultCondition(BaseCondition):
     def get_attributes(self, typing: Any) -> Optional[Dict[str, Any]]:
         for dependency in self._dependency_storage.get_raw_dependency(typing):
             return self._resolver.get_implementation(dependency.target)
+
         raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
+
+
+class AnyCondition(BaseCondition):
+    _collection_type_names = {"Any"}
+
+    def get_attributes(self, typing: Any) -> Optional[NoReturn]:
+        if not check_generic_typing(typing, self._collection_type_names):
+            return None
+
+        raise DependencyResolvingException(f"Any or no annotation is not supported")
 
 
 class CollectionCondition(BaseCondition):
