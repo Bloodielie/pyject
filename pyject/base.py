@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from inspect import Signature
 from typing import Type, TypeVar, List, Any, Dict, overload, Optional, Union
 
-from pyject.models import DependencyStorage, Scope
+from pyject.models import Scope
 
 T = TypeVar("T")
 
@@ -55,13 +55,12 @@ class IResolver(ABC):
         """Get resolved signature attributes"""
 
     @abstractmethod
-    def add_condition(self, condition: Type["BaseCondition"]) -> None:
-        """Add a condition to apply it in the dependency solution"""
+    def get_resolved_dependencies(self, typing: Any):
+        pass
 
 
 class BaseCondition(ABC):
-    def __init__(self, dependency_storage: DependencyStorage, resolver: IResolver):
-        self._dependency_storage = dependency_storage
+    def __init__(self, resolver: IResolver):
         self._resolver = resolver
 
     @abstractmethod
@@ -71,3 +70,13 @@ class BaseCondition(ABC):
     @abstractmethod
     def get_attributes(self, typing: Any) -> Any:
         """Get attributes from container for typing"""
+
+
+class IConditionCollections(ABC):
+    @abstractmethod
+    def add_condition(self, condition: Type["BaseCondition"]) -> None:
+        """Add a condition to apply it in the dependency solution"""
+
+    @abstractmethod
+    def find(self, typing: Any) -> Optional[Any]:
+        pass

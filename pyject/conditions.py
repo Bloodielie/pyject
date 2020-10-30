@@ -5,16 +5,13 @@ from pyject.exception import DependencyResolvingException
 from pyject.utils import check_generic_typing, check_union_typing
 
 
-# todo: Added: Optional, Union
-
-
 class DefaultCondition(BaseCondition):
     def check_typing(self, typing: Any) -> bool:
         return True
 
     def get_attributes(self, typing: Any) -> Dict[str, Any]:
-        for dependency in self._dependency_storage.get_raw_dependency(typing):
-            return self._resolver.get_implementation(dependency.target)
+        for dependency in self._resolver.get_resolved_dependencies(typing):
+            return dependency
 
         raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
 
@@ -41,13 +38,13 @@ class UnionCondition(BaseCondition):
         args = typing.__args__
 
         if len(args) == 2 and args[1] is type(None):
-            for dependency in self._dependency_storage.get_raw_dependency(args[0]):
-                return self._resolver.get_implementation(dependency.target)
+            for dependency in self._resolver.get_resolved_dependencies(args[0]):
+                return dependency
             return None
 
         for inner_type in args:
-            for dependency in self._dependency_storage.get_raw_dependency(inner_type):
-                return self._resolver.get_implementation(dependency.target)
+            for dependency in self._resolver.get_resolved_dependencies(inner_type):
+                return dependency
 
         raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
 
@@ -63,8 +60,9 @@ class CollectionCondition(BaseCondition):
     def get_attributes(self, typing: Any) -> List[Dict[str, Any]]:
         field_attributes = []
         for inner_type in typing.__args__:
-            for dependency in self._dependency_storage.get_raw_dependency(inner_type):
-                field_attributes.append(self._resolver.get_implementation(dependency.target))
+            for dependency in self._resolver.get_resolved_dependencies(inner_type):
+                field_attributes.append(dependency)
+
         if not field_attributes:
             raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
         return field_attributes
@@ -83,5 +81,5 @@ class IteratorCondition(BaseCondition):
 
     def _iterator(self, typings: Sequence[Any]):
         for typing in typings:
-            for dependency in self._dependency_storage.get_raw_dependency(typing):
-                yield self._resolver.get_implementation(dependency.target)
+            for dependency in self._resolver.get_resolved_dependencies(typing):
+                yield dependency
