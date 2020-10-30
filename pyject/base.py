@@ -65,5 +65,9 @@ class BaseCondition(ABC):
         self._resolver = resolver
 
     @abstractmethod
+    def check_typing(self, typing: Any) -> bool:
+        """Get attributes from container for typing"""
+
+    @abstractmethod
     def get_attributes(self, typing: Any) -> Any:
         """Get attributes from container for typing"""

@@ -1,7 +1,7 @@
 from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn
 
 from pyject.base import BaseCondition
-from pyject.exception import DependencyResolvingException, TypingDoesNotMatch
+from pyject.exception import DependencyResolvingException
 from pyject.utils import check_generic_typing, check_union_typing
 
 
@@ -9,6 +9,9 @@ from pyject.utils import check_generic_typing, check_union_typing
 
 
 class DefaultCondition(BaseCondition):
+    def check_typing(self, typing: Any) -> bool:
+        return True
+
     def get_attributes(self, typing: Any) -> Dict[str, Any]:
         for dependency in self._dependency_storage.get_raw_dependency(typing):
             return self._resolver.get_implementation(dependency.target)
@@ -19,17 +22,22 @@ class DefaultCondition(BaseCondition):
 class AnyCondition(BaseCondition):
     _type_names_to_check = {"Any"}
 
-    def get_attributes(self, typing: Any) -> NoReturn:
+    def check_typing(self, typing: Any) -> bool:
         if not check_generic_typing(typing, self._type_names_to_check):
-            raise TypingDoesNotMatch()
+            return False
+        return True
 
+    def get_attributes(self, typing: Any) -> NoReturn:
         raise DependencyResolvingException(f"Any or empty annotation is not supported")
 
 
 class UnionCondition(BaseCondition):
-    def get_attributes(self, typing: Any) -> Optional[Dict[str, Any]]:
+    def check_typing(self, typing: Any) -> bool:
         if not check_union_typing(typing):
-            raise TypingDoesNotMatch()
+            return False
+        return True
+
+    def get_attributes(self, typing: Any) -> Optional[Dict[str, Any]]:
         args = typing.__args__
 
         if len(args) == 2 and args[1] is type(None):
@@ -47,10 +55,12 @@ class UnionCondition(BaseCondition):
 class CollectionCondition(BaseCondition):
     _type_names_to_check = {"Set", "List", "Tuple", "FrozenSet", "Sequence"}
 
-    def get_attributes(self, typing: Any) -> List[Dict[str, Any]]:
+    def check_typing(self, typing: Any) -> bool:
         if not check_generic_typing(typing, self._type_names_to_check):
-            raise TypingDoesNotMatch()
+            return False
+        return True
 
+    def get_attributes(self, typing: Any) -> List[Dict[str, Any]]:
         field_attributes = []
         for inner_type in typing.__args__:
             for dependency in self._dependency_storage.get_raw_dependency(inner_type):
@@ -63,10 +73,12 @@ class CollectionCondition(BaseCondition):
 class IteratorCondition(BaseCondition):
     _type_names_to_check = {"Iterator"}
 
-    def get_attributes(self, typing: Any) -> Iterator[Any]:
+    def check_typing(self, typing: Any) -> bool:
         if not check_generic_typing(typing, self._type_names_to_check):
-            raise TypingDoesNotMatch()
+            return False
+        return True
 
+    def get_attributes(self, typing: Any) -> Iterator[Any]:
         return self._iterator(typing.__args__)
 
     def _iterator(self, typings: Sequence[Any]):
