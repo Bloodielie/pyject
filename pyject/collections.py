@@ -1,11 +1,10 @@
 from contextvars import ContextVar
-from typing import List, Optional, Any, Union, Iterator, Type
+from typing import List, Optional, Any, Union, Type
 
 from pyject.models import Scope
 from pyject.base import BaseCondition, IResolver, IConditionCollections
 from pyject.conditions import DefaultCondition, AnyCondition, CollectionCondition, UnionCondition, IteratorCondition
 from pyject.models import DependencyWrapper
-from pyject.utils import _check_annotation
 
 
 class DependencyStorage:
@@ -26,7 +25,7 @@ class DependencyStorage:
                 new_context_dependencies.extend(context_dependencies)
                 self._context_dependencies.set(new_context_dependencies)
 
-    def get_raw_dependency(self, annotation: Any) -> Iterator[DependencyWrapper]:
+    def get_dependencies(self):
         """Get unresolved object/class"""
         context_dependency_storage = self._context_dependencies.get(None)
         if context_dependency_storage is None:
@@ -36,8 +35,7 @@ class DependencyStorage:
 
         for storage in storages:
             for dependency_wrapper in storage:
-                if _check_annotation(annotation, dependency_wrapper.type_):
-                    yield dependency_wrapper
+                yield dependency_wrapper
 
     def __len__(self) -> int:
         return len(self._dependencies) + len(self._context_dependencies.get([]))  # type: ignore

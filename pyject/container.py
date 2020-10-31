@@ -2,12 +2,16 @@ from typing import Any, List, TypeVar, Type, Optional, Dict, Union
 
 from pyject.base import IContainer
 from pyject.exception import DependencyNotFound
-from pyject.models import Scope, DependencyStorage
+from pyject.models import Scope
+from pyject.collections import DependencyStorage
 from pyject.resolver import Resolver
 from pyject.signature import get_signature_to_implementation
 from pyject.utils import ContextInstanceMixin
 
 T = TypeVar("T")
+
+
+# todo: сделать оптимизацию, сначало искать в dict а потом пробигаться по нему
 
 
 class Container(IContainer, ContextInstanceMixin):
@@ -38,22 +42,17 @@ class Container(IContainer, ContextInstanceMixin):
 
     def get(self, annotation: Type[T]) -> T:
         """Get object from container"""
-        for dependency_wrapper in self._dependency_storage.get_raw_dependency(annotation):
-            if dependency_wrapper.scope == Scope.TRANSIENT:
-                return self._resolver.get_implementation(dependency_wrapper.target)
-            else:
-                return dependency_wrapper.target
+        for dependency in self._resolver.get_resolved_dependencies(annotation):
+            return dependency
+
         raise DependencyNotFound("Dependency not found")
 
     def get_all(self, annotation: Type[T]) -> List[T]:
         """Get all object from container"""
-        dependency_wrappers = []
-        for dependency_wrapper in self._dependency_storage.get_raw_dependency(annotation):
-            if dependency_wrapper.scope == Scope.TRANSIENT:
-                dependency_wrappers.append(self._resolver.get_implementation(dependency_wrapper.target))
-            else:
-                dependency_wrappers.append(dependency_wrapper.target)
-        return dependency_wrappers
+        dependencies = []
+        for dependency in self._resolver.get_resolved_dependencies(annotation):
+            dependencies.append(dependency)
+        return dependencies
 
     def get_target_attributes(self, target: Any) -> Optional[Dict[str, Any]]:
         """Get resolved object attributes"""
