@@ -5,13 +5,14 @@ from pyject.exception import DependencyNotFound
 from pyject.models import Scope
 from pyject.collections import DependencyStorage
 from pyject.resolver import Resolver
-from pyject.signature import get_signature_to_implementation
+from pyject.annotations import get_annotations_to_implementation
 from pyject.utils import ContextInstanceMixin
 
 T = TypeVar("T")
 
 
-# todo: сделать оптимизацию, сначало искать в dict а потом пробигаться по нему
+# todo: добавить первую попытку получения из словаря зависимости
+# todo: получать параметры при добавлении в storage
 
 
 class Container(IContainer, ContextInstanceMixin):
@@ -56,9 +57,9 @@ class Container(IContainer, ContextInstanceMixin):
 
     def get_target_attributes(self, target: Any) -> Optional[Dict[str, Any]]:
         """Get resolved object attributes"""
-        signature = get_signature_to_implementation(target)
-        if signature is not None:
-            return self._resolver.get_implementation_attr(signature)
+        annotations = get_annotations_to_implementation(target)
+        if annotations is not None:
+            return self._resolver.get_implementation_attr(annotations)
         return None
 
     def __len__(self) -> int:
