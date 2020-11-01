@@ -1,5 +1,5 @@
 from contextvars import ContextVar
-from typing import List, Optional, Any, Union, Type, Dict
+from typing import List, Optional, Any, Union, Type, Dict, Iterator
 
 from pyject.annotations import get_annotations_to_implementation
 from pyject.models import Scope
@@ -36,8 +36,8 @@ class DependencyStorage:
             new_context_dependencies.extend(context_dependencies)
             self._context_dependencies.set(new_context_dependencies)
 
-    def get_dependencies(self, *, ignore_annotation: Optional[Any] = None):
-        """Get unresolved object/class"""
+    def get_dependencies(self, *, ignore_annotation: Optional[Any] = None) -> Iterator[DependencyWrapper]:
+        """Get unresolved iterator object/class"""
         for dependency_wrapper in self._context_dependencies.get([]):  # type: ignore
             yield dependency_wrapper
 
@@ -48,6 +48,7 @@ class DependencyStorage:
                 yield dependency_wrapper
 
     def get_dependencies_by_annotation(self, annotation: Any) -> List[DependencyWrapper]:
+        """Get unresolved object/class by annotation"""
         return self._dependencies.get(annotation, [])
 
     def __len__(self) -> int:
@@ -69,10 +70,12 @@ class ConditionCollections(IConditionCollections):
 
         self._setup_base_conditions()
 
-    def add_condition(self, condition: Type[BaseCondition]) -> None:
+    def add(self, condition: Type[BaseCondition]) -> None:
+        """Add a condition to apply it in the dependency solution"""
         self._conditions.append(self._resolve_condition(condition))
 
     def find(self, typing: Any) -> Optional[Any]:
+        """Finding a condition for type and getting attributes"""
         for condition in self._conditions:
             if condition.check_typing(typing):
                 return condition.get_attributes(typing)
@@ -81,10 +84,10 @@ class ConditionCollections(IConditionCollections):
 
     def _setup_base_conditions(self) -> None:
         self._default_condition = self._resolve_condition(DefaultCondition)
-        self.add_condition(AnyCondition)
-        self.add_condition(CollectionCondition)
-        self.add_condition(UnionCondition)
-        self.add_condition(IteratorCondition)
+        self.add(AnyCondition)
+        self.add(CollectionCondition)
+        self.add(UnionCondition)
+        self.add(IteratorCondition)
 
     def _resolve_condition(self, condition: Type[BaseCondition]) -> BaseCondition:
         return condition(self._resolver)

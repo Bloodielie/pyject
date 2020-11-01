@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar, List, Any, Dict, Optional, Union
+from typing import Type, TypeVar, List, Any, Dict, Optional, Union, Iterator
 
 from pyject.models import Scope
 
@@ -42,8 +42,8 @@ class IResolver(ABC):
         """Get resolved signature attributes"""
 
     @abstractmethod
-    def get_resolved_dependencies(self, typing: Any):
-        pass
+    def get_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
+        """An iterator that returns resolved dependencies"""
 
 
 class BaseCondition(ABC):
@@ -61,9 +61,9 @@ class BaseCondition(ABC):
 
 class IConditionCollections(ABC):
     @abstractmethod
-    def add_condition(self, condition: Type["BaseCondition"]) -> None:
+    def add(self, condition: Type["BaseCondition"]) -> None:
         """Add a condition to apply it in the dependency solution"""
 
     @abstractmethod
     def find(self, typing: Any) -> Optional[Any]:
-        pass
+        """Finding a condition for type and getting attributes"""

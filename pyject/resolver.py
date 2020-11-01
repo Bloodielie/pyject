@@ -1,4 +1,4 @@
-from typing import Dict, Any, TypeVar
+from typing import Dict, Any, TypeVar, Iterator
 
 from pyject.models import Scope, DependencyWrapper
 from pyject.base import IResolver
@@ -34,7 +34,8 @@ class Resolver(IResolver):
         attr = self.get_implementation_attr(dependency_wrapper.annotations)
         return dependency_wrapper.target(**attr)
 
-    def get_resolved_dependencies(self, typing: Any):
+    def get_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
+        """Get attributes from container for typing"""
         wrappers = self._dependency_storage.get_dependencies_by_annotation(typing)
         for wrapper in wrappers:
             yield self._check_and_get_implementation(wrapper)
@@ -44,7 +45,7 @@ class Resolver(IResolver):
                 continue
             yield self._check_and_get_implementation(dependency_wrapper)
 
-    def _check_and_get_implementation(self, dependency_wrapper: DependencyWrapper):
+    def _check_and_get_implementation(self, dependency_wrapper: DependencyWrapper) -> Any:
         if dependency_wrapper.scope == Scope.TRANSIENT:
             return self._get_implementation(dependency_wrapper)
         else:
