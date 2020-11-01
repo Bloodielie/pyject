@@ -1,5 +1,5 @@
 from contextvars import ContextVar
-from typing import List, Optional, Any, Union, Type
+from typing import List, Optional, Any, Union, Type, Dict
 
 from pyject.annotations import get_annotations_to_implementation
 from pyject.models import Scope
@@ -10,14 +10,18 @@ from pyject.models import DependencyWrapper
 
 class DependencyStorage:
     def __init__(self):
-        self._dependencies: List[DependencyWrapper] = []
+        self._dependencies: Dict[Any, List[DependencyWrapper]] = {}
         self._context_dependencies: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(f"_context_storage_{id(self)}")
 
     def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = DependencyWrapper(
             type_=annotation, target=implementation, annotations=get_annotations_to_implementation(implementation), scope=scope
         )
-        self._dependencies.append(wrapper)
+        dependency = self._dependencies.get(annotation, None)
+        if dependency is None:
+            self._dependencies[annotation] = [wrapper]
+        else:
+            dependency.append(wrapper)
 
     def add_context(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = DependencyWrapper(
@@ -32,17 +36,19 @@ class DependencyStorage:
             new_context_dependencies.extend(context_dependencies)
             self._context_dependencies.set(new_context_dependencies)
 
-    def get_dependencies(self):
+    def get_dependencies(self, *, ignore_annotation: Optional[Any] = None):
         """Get unresolved object/class"""
-        context_dependency_storage = self._context_dependencies.get(None)
-        if context_dependency_storage is None:
-            storages = [self._dependencies]
-        else:
-            storages = [context_dependency_storage, self._dependencies]
+        for dependency_wrapper in self._context_dependencies.get([]):  # type: ignore
+            yield dependency_wrapper
 
-        for storage in storages:
-            for dependency_wrapper in storage:
+        for dependency_wrappers in self._dependencies.values():
+            for dependency_wrapper in dependency_wrappers:
+                if dependency_wrapper.type_ == ignore_annotation:
+                    continue
                 yield dependency_wrapper
+
+    def get_dependencies_by_annotation(self, annotation: Any) -> List[DependencyWrapper]:
+        return self._dependencies.get(annotation, [])
 
     def __len__(self) -> int:
         return len(self._dependencies) + len(self._context_dependencies.get([]))  # type: ignore

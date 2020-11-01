@@ -35,10 +35,17 @@ class Resolver(IResolver):
         return dependency_wrapper.target(**attr)
 
     def get_resolved_dependencies(self, typing: Any):
-        for dependency_wrapper in self._dependency_storage.get_dependencies():
+        wrappers = self._dependency_storage.get_dependencies_by_annotation(typing)
+        for wrapper in wrappers:
+            yield self._check_and_get_implementation(wrapper)
+
+        for dependency_wrapper in self._dependency_storage.get_dependencies(ignore_annotation=typing):
             if not _check_annotation(typing, dependency_wrapper.type_):
                 continue
-            if dependency_wrapper.scope == Scope.TRANSIENT:
-                yield self._get_implementation(dependency_wrapper)
-            else:
-                yield dependency_wrapper.target
+            yield self._check_and_get_implementation(dependency_wrapper)
+
+    def _check_and_get_implementation(self, dependency_wrapper: DependencyWrapper):
+        if dependency_wrapper.scope == Scope.TRANSIENT:
+            return self._get_implementation(dependency_wrapper)
+        else:
+            return dependency_wrapper.target

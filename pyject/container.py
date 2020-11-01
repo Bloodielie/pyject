@@ -11,9 +11,6 @@ from pyject.utils import ContextInstanceMixin
 T = TypeVar("T")
 
 
-# todo: добавить первую попытку получения из словаря зависимости
-
-
 class Container(IContainer, ContextInstanceMixin):
     def __init__(self) -> None:
         self._dependency_storage = DependencyStorage()
