@@ -12,7 +12,6 @@ T = TypeVar("T")
 
 
 # todo: добавить первую попытку получения из словаря зависимости
-# todo: получать параметры при добавлении в storage
 
 
 class Container(IContainer, ContextInstanceMixin):
@@ -26,8 +25,12 @@ class Container(IContainer, ContextInstanceMixin):
 
     def add_singleton(self, annotation: Any, implementation: Any) -> None:
         """Add a class that will be initialized once when added"""
-        implementation = self._resolver.get_implementation(implementation)
-        self._dependency_storage.add(annotation, implementation, Scope.SINGLETON)
+        attrs = self.get_target_attributes(implementation)
+        if attrs is not None:
+            implementation = implementation(**attrs)
+            self._dependency_storage.add(annotation, implementation, Scope.SINGLETON)
+        else:
+            self._dependency_storage.add(annotation, implementation, Scope.SINGLETON)
 
     def add_constant(self, annotation: Any, implementation: Any) -> None:
         """Adds an object that does not need to be initialized"""

@@ -1,6 +1,7 @@
 from contextvars import ContextVar
 from typing import List, Optional, Any, Union, Type
 
+from pyject.annotations import get_annotations_to_implementation
 from pyject.models import Scope
 from pyject.base import BaseCondition, IResolver, IConditionCollections
 from pyject.conditions import DefaultCondition, AnyCondition, CollectionCondition, UnionCondition, IteratorCondition
@@ -13,13 +14,17 @@ class DependencyStorage:
         self._context_dependencies: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(f"_context_storage_{id(self)}")
 
     def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
-        wrapper = DependencyWrapper(type_=annotation, target=implementation, scope=scope)
+        wrapper = DependencyWrapper(
+            type_=annotation, target=implementation, annotations=get_annotations_to_implementation(implementation), scope=scope
+        )
         self._dependencies.append(wrapper)
 
     def add_context(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
-        wrapper = DependencyWrapper(type_=annotation, target=implementation, scope=scope)
-
+        wrapper = DependencyWrapper(
+            type_=annotation, target=implementation, annotations=get_annotations_to_implementation(implementation), scope=scope
+        )
         new_context_dependencies = [wrapper]
+
         context_dependencies = self._context_dependencies.get(None)
         if context_dependencies is None:
             self._context_dependencies.set(new_context_dependencies)

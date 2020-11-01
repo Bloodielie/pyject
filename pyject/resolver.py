@@ -1,9 +1,8 @@
 from typing import Dict, Any, TypeVar
 
-from pyject.models import Scope
+from pyject.models import Scope, DependencyWrapper
 from pyject.base import IResolver
 from pyject.collections import DependencyStorage, ConditionCollections
-from pyject.annotations import get_annotations_to_implementation
 from pyject.utils import _check_annotation
 
 T = TypeVar("T")
@@ -28,19 +27,18 @@ class Resolver(IResolver):
 
         return callable_object_arguments
 
-    def get_implementation(self, implementation):
-        """Check and get resolved implementation"""
-        annotations = get_annotations_to_implementation(implementation)
-        if annotations is not None:
-            attr = self.get_implementation_attr(annotations)
-            implementation = implementation(**attr)
-        return implementation
+    def _get_implementation(self, dependency_wrapper: DependencyWrapper):
+        if dependency_wrapper.annotations is None:
+            return dependency_wrapper.target
+
+        attr = self.get_implementation_attr(dependency_wrapper.annotations)
+        return dependency_wrapper.target(**attr)
 
     def get_resolved_dependencies(self, typing: Any):
         for dependency_wrapper in self._dependency_storage.get_dependencies():
             if not _check_annotation(typing, dependency_wrapper.type_):
                 continue
             if dependency_wrapper.scope == Scope.TRANSIENT:
-                yield self.get_implementation(dependency_wrapper.target)
+                yield self._get_implementation(dependency_wrapper)
             else:
                 yield dependency_wrapper.target

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from inspect import Signature
-from typing import Type, TypeVar, List, Any, Dict, overload, Optional, Union
+from typing import Type, TypeVar, List, Any, Dict, Optional, Union
 
 from pyject.models import Scope
 
@@ -38,20 +37,8 @@ class IContainer(ABC):
 
 
 class IResolver(ABC):
-    @overload
-    def get_implementation(self, implementation: Type[T]) -> T:
-        ...
-
-    @overload
-    def get_implementation(self, implementation: T) -> T:
-        ...
-
     @abstractmethod
-    def get_implementation(self, implementation):
-        """Check and get resolved implementation"""
-
-    @abstractmethod
-    def get_implementation_attr(self, signature: Signature) -> Dict[str, Any]:
+    def get_implementation_attr(self, annotations: Dict[str, Any]) -> Dict[str, Any]:
         """Get resolved signature attributes"""
 
     @abstractmethod
