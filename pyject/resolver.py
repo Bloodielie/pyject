@@ -21,7 +21,7 @@ class Resolver(IResolver):
         """Get resolved signature attributes"""
         callable_object_arguments = {}
         for name, annotation in annotations.items():
-            if name == 'return' or name == "self":
+            if name == "self":
                 continue
 
             callable_object_arguments[name] = self._condition_collections.find(annotation)

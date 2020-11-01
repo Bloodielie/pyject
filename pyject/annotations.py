@@ -4,6 +4,9 @@ from typing import Any, get_type_hints, Dict, Optional
 
 def get_annotations(implementation: Any) -> Dict[str, Any]:
     type_hints = get_type_hints(implementation)
+    if "return" in type_hints:
+        del type_hints["return"]
+
     implementation_code = getattr(implementation, "__code__", None)
     if implementation_code is None:
         return type_hints
@@ -12,6 +15,7 @@ def get_annotations(implementation: Any) -> Dict[str, Any]:
         if argument in type_hints:
             continue
         type_hints[argument] = Any
+
     return type_hints
 
 
