@@ -39,7 +39,7 @@ class Container(IContainer, ContextInstanceMixin):
 
     def add_context(self, annotation: Any, implementation: Any, *, scope: Union[Scope, int] = Scope.TRANSIENT) -> None:
         """Add a class/object that can only be retrieved in the same context"""
-        self._dependency_storage.add(annotation, implementation, scope, in_context=True)
+        self._dependency_storage.add_context(annotation, implementation, scope)
 
     def get(self, annotation: Type[T]) -> T:
         """Get object from container"""

@@ -12,18 +12,20 @@ class DependencyStorage:
         self._dependencies: List[DependencyWrapper] = []
         self._context_dependencies: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(f"_context_storage_{id(self)}")
 
-    def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int], in_context: bool = False) -> None:
+    def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = DependencyWrapper(type_=annotation, target=implementation, scope=scope)
-        if not in_context:
-            self._dependencies.append(wrapper)
+        self._dependencies.append(wrapper)
+
+    def add_context(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
+        wrapper = DependencyWrapper(type_=annotation, target=implementation, scope=scope)
+
+        new_context_dependencies = [wrapper]
+        context_dependencies = self._context_dependencies.get(None)
+        if context_dependencies is None:
+            self._context_dependencies.set(new_context_dependencies)
         else:
-            new_context_dependencies = [wrapper]
-            context_dependencies = self._context_dependencies.get(None)
-            if context_dependencies is None:
-                self._context_dependencies.set(new_context_dependencies)
-            else:
-                new_context_dependencies.extend(context_dependencies)
-                self._context_dependencies.set(new_context_dependencies)
+            new_context_dependencies.extend(context_dependencies)
+            self._context_dependencies.set(new_context_dependencies)
 
     def get_dependencies(self):
         """Get unresolved object/class"""
