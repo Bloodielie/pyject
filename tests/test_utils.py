@@ -21,4 +21,3 @@ def test_check_union_typing():
     assert check_union_typing(Iterator[str]) is False
     assert check_union_typing(Union[str, int]) is True
     assert check_union_typing(Optional[str]) is True
-
