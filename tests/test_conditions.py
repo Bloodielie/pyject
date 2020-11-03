@@ -8,22 +8,6 @@ from pyject.conditions import DefaultCondition, AnyCondition, UnionCondition, Co
 
 
 @fixture()
-def resolver_feick():
-    class Resolver:
-        def get_resolved_dependencies(self, typing):
-            return []
-    return Resolver()
-
-
-@fixture()
-def resolver_feick_2():
-    class Resolver:
-        def get_resolved_dependencies(self, typing):
-            return ["test"]
-    return Resolver()
-
-
-@fixture()
 def list_typing():
     return List[str]
 
@@ -92,7 +76,7 @@ def test_check_typing_iterator_condition(resolver_feick, list_typing, iterator_t
     assert condition.check_typing(iterator_typing) is True
 
 
-def test_get_attributes_any_condition():
+def test_get_attributes_any_condition(resolver_feick):
     condition = AnyCondition(resolver_feick)
     with raises(DependencyResolvingException):
         condition.get_attributes(Any)

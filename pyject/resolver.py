@@ -4,6 +4,7 @@ from pyject.models import Scope, DependencyWrapper
 from pyject.base import IResolver
 from pyject.collections import DependencyStorage, ConditionCollections
 from pyject.utils import _check_annotation
+from pyject.conditions import DefaultCondition, AnyCondition, CollectionCondition, UnionCondition, IteratorCondition
 
 T = TypeVar("T")
 
@@ -14,7 +15,9 @@ class Resolver(IResolver):
         dependency_storage: DependencyStorage,
     ) -> None:
         self._dependency_storage = dependency_storage
-        self._condition_collections = ConditionCollections(self)
+        self._condition_collections = ConditionCollections(
+            self, [AnyCondition, CollectionCondition, UnionCondition, IteratorCondition], default_condition=DefaultCondition
+        )
 
     def get_implementation_attr(self, annotations: Dict[str, Any]) -> Dict[str, Any]:
         """Get resolved signature attributes"""

@@ -4,7 +4,6 @@ from typing import List, Optional, Any, Union, Type, Dict, Iterator
 from pyject.annotations import get_annotations_to_implementation
 from pyject.models import Scope
 from pyject.base import BaseCondition, IResolver, IConditionCollections
-from pyject.conditions import DefaultCondition, AnyCondition, CollectionCondition, UnionCondition, IteratorCondition
 from pyject.models import DependencyWrapper
 
 
@@ -60,6 +59,7 @@ class ConditionCollections(IConditionCollections):
         self,
         resolver: IResolver,
         conditions: Optional[List[Type[BaseCondition]]] = None,
+        default_condition: Optional[Type[BaseCondition]] = None
     ) -> None:
         self._resolver = resolver
 
@@ -67,8 +67,7 @@ class ConditionCollections(IConditionCollections):
         if conditions is not None:
             for condition in conditions:
                 self._conditions.append(self._resolve_condition(condition))
-
-        self._setup_base_conditions()
+        self._default_condition = self._resolve_condition(default_condition) if default_condition is not None else None
 
     def add(self, condition: Type[BaseCondition]) -> None:
         """Add a condition to apply it in the dependency solution"""
@@ -80,14 +79,19 @@ class ConditionCollections(IConditionCollections):
             if condition.check_typing(typing):
                 return condition.get_attributes(typing)
 
-        return self._default_condition.get_attributes(typing)
-
-    def _setup_base_conditions(self) -> None:
-        self._default_condition = self._resolve_condition(DefaultCondition)
-        self.add(AnyCondition)
-        self.add(CollectionCondition)
-        self.add(UnionCondition)
-        self.add(IteratorCondition)
+        if self._default_condition is not None:
+            return self._default_condition.get_attributes(typing)
 
     def _resolve_condition(self, condition: Type[BaseCondition]) -> BaseCondition:
         return condition(self._resolver)
+
+    def __iter__(self) -> Iterator[BaseCondition]:
+        for condition in self._conditions:
+            yield condition
+        if self._default_condition is not None:
+            yield self._default_condition
+
+    def __len__(self) -> int:
+        if self._default_condition is not None:
+            return len(self._conditions) + 1
+        return len(self._conditions)
