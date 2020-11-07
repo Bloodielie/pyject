@@ -11,7 +11,7 @@ from pyject.utils import ContextInstanceMixin, is_coroutine_callable
 T = TypeVar("T")
 
 
-# todo: попробовать сделать поддержку asyncio посредствам заворачивания класса с аргументами в врапер который юзер будет ассинхронно вызывать, синглтон добавлять при первом создании
+# todo: сделать поддержку asyncio
 
 
 class Container(IContainer, ContextInstanceMixin):

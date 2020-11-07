@@ -1,4 +1,4 @@
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 from pyject.container import Container
 from pyject.models import Scope
