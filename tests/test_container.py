@@ -1,5 +1,7 @@
 from typing import List, Iterator
 
+import pytest
+
 from pyject.exception import DependencyNotFound, DependencyResolvingException
 
 from pytest import fixture, raises
@@ -43,6 +45,28 @@ def test_getting_factory_from_container(container_with_transient_classes):
     duck = container_with_transient_classes.get("duck")
     assert isinstance(duck, DuckInterface)
     assert isinstance(duck, DuckA)
+
+
+def test_resolve_target(container_with_transient_classes):
+    duck = container_with_transient_classes.resolve(DuckA)
+    assert isinstance(duck, DuckInterface)
+    assert isinstance(duck, DuckA)
+
+    with raises(DependencyResolvingException):
+        container_with_transient_classes.resolve(DuckC())
+
+
+@pytest.mark.asyncio
+async def test_async_resolve_target(container_with_transient_classes):
+    async def test(duck: DuckA):
+        return duck
+
+    duck = await container_with_transient_classes.async_resolve(test)
+    assert isinstance(duck, DuckInterface)
+    assert isinstance(duck, DuckA)
+
+    with raises(DependencyResolvingException):
+        await container_with_transient_classes.async_resolve(DuckC)
 
 
 def test_get_exception(container):

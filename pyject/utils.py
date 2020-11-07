@@ -1,4 +1,5 @@
-from typing import Any, TypeVar, Type, Iterable, Union
+import inspect
+from typing import Any, TypeVar, Type, Iterable, Union, Callable, Awaitable
 import contextvars
 
 T = TypeVar("T")
@@ -23,6 +24,15 @@ def check_generic_typing(annotation: Any, collection_type_names: Iterable[str]) 
     if annotation_type_name is not None and annotation_type_name in collection_type_names:
         return True
     return False
+
+
+def is_coroutine_callable(call: Union[Callable[..., Any], Awaitable[Any]]) -> bool:
+    if inspect.isroutine(call):
+        return inspect.iscoroutinefunction(call)
+    if inspect.isclass(call):
+        return False
+    call = getattr(call, "__call__", None)
+    return inspect.iscoroutinefunction(call)
 
 
 def check_union_typing(annotation: Any) -> bool:

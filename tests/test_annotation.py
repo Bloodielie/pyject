@@ -21,14 +21,14 @@ def test_get_annotations():
     for key in annotations.keys():
         assert isinstance(key, str)
 
-    assert annotations == {'self': typing.Any}
+    assert annotations == {"self": typing.Any}
 
     instance = BaseTestClass()
     annotations = get_annotations(instance.test)
-    assert annotations == {'self': typing.Any, "a": str}
+    assert annotations == {"self": typing.Any, "a": str}
 
     annotations = get_annotations(instance.__call__)
-    assert annotations == {'self': typing.Any, "b": str}
+    assert annotations == {"self": typing.Any, "b": str}
 
 
 def test_get_annotation_to_implementation():

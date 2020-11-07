@@ -30,11 +30,11 @@ def test_get_resolved_dependencies(filled_resolver):
 
 
 def test_get_implementation_attr(filled_resolver):
-    attrs = filled_resolver.get_implementation_attr({'squeak': QuackBehavior, 'self': typing.Any})
+    attrs = filled_resolver.get_implementation_attr({"squeak": QuackBehavior, "self": typing.Any})
     assert isinstance(attrs, dict) is True
     for key, value in attrs.items():
         assert isinstance(key, str) is True
-        assert key == 'squeak'
+        assert key == "squeak"
         assert isinstance(value, QuackBehavior) is True
 
     attrs = filled_resolver.get_implementation_attr({})

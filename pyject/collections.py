@@ -59,7 +59,7 @@ class ConditionCollections(IConditionCollections):
         self,
         resolver: IResolver,
         conditions: Optional[List[Type[BaseCondition]]] = None,
-        default_condition: Optional[Type[BaseCondition]] = None
+        default_condition: Optional[Type[BaseCondition]] = None,
     ) -> None:
         self._resolver = resolver
 
@@ -81,6 +81,7 @@ class ConditionCollections(IConditionCollections):
 
         if self._default_condition is not None:
             return self._default_condition.get_attributes(typing)
+        return None
 
     def _resolve_condition(self, condition: Type[BaseCondition]) -> BaseCondition:
         return condition(self._resolver)

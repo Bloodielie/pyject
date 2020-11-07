@@ -1,14 +1,17 @@
-from typing import Any, List, TypeVar, Type, Optional, Dict, Union
+from typing import Any, List, TypeVar, Type, Optional, Dict, Union, Callable, Awaitable, overload
 
 from pyject.base import IContainer
-from pyject.exception import DependencyNotFound
+from pyject.exception import DependencyNotFound, DependencyResolvingException
 from pyject.models import Scope
 from pyject.collections import DependencyStorage
 from pyject.resolver import Resolver
 from pyject.annotations import get_annotations_to_implementation
-from pyject.utils import ContextInstanceMixin
+from pyject.utils import ContextInstanceMixin, is_coroutine_callable
 
 T = TypeVar("T")
+
+
+# todo: попробовать сделать поддержку asyncio посредствам заворачивания класса с аргументами в врапер который юзер будет ассинхронно вызывать, синглтон добавлять при первом создании
 
 
 class Container(IContainer, ContextInstanceMixin):
@@ -61,6 +64,30 @@ class Container(IContainer, ContextInstanceMixin):
         if annotations is not None:
             return self._resolver.get_implementation_attr(annotations)
         return None
+
+    @overload
+    def resolve(self, target: Type[T]) -> T:
+        ...
+
+    @overload
+    def resolve(self, target: Callable[..., T]) -> T:
+        ...
+
+    def resolve(self, target):
+        """Get resolved object"""
+        attrs = self.get_target_attributes(target)
+        if attrs is None:
+            raise DependencyResolvingException("Failed to get target attributes")
+        return target(**attrs)
+
+    async def async_resolve(self, target: Callable[..., Awaitable[T]]) -> T:
+        """Get resolved async object"""
+        if is_coroutine_callable(target):
+            attrs = self.get_target_attributes(target)
+            if attrs is None:
+                raise DependencyResolvingException("Failed to get target attributes")
+            return await target(**attrs)
+        raise DependencyResolvingException("Target is not an asynchronous function")
 
     def __len__(self) -> int:
         return len(self._dependency_storage)

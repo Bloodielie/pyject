@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar, List, Any, Dict, Optional, Union, Iterator
+from typing import Type, TypeVar, List, Any, Dict, Optional, Union, Iterator, overload, Callable, Awaitable
 
 from pyject.models import Scope
 
@@ -34,6 +34,22 @@ class IContainer(ABC):
     @abstractmethod
     def get_target_attributes(self, target: Any) -> Optional[Dict[str, Any]]:
         """Get resolved object attributes"""
+
+    @overload
+    def resolve(self, target: Type[T]) -> T:
+        ...
+
+    @overload
+    def resolve(self, target: Callable[..., T]) -> T:
+        ...
+
+    @abstractmethod
+    def resolve(self, target):
+        ...
+
+    @abstractmethod
+    async def async_resolve(self, target: Callable[..., Awaitable[T]]) -> T:
+        ...
 
 
 class IResolver(ABC):
