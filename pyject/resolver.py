@@ -1,4 +1,4 @@
-from typing import Dict, Any, TypeVar, Iterator
+from typing import Dict, Any, TypeVar, Iterator, Tuple
 
 from pyject.models import Scope, DependencyWrapper
 from pyject.base import IResolver
@@ -19,10 +19,10 @@ class Resolver(IResolver):
             self, [AnyCondition, CollectionCondition, UnionCondition, IteratorCondition], default_condition=DefaultCondition
         )
 
-    def get_implementation_attr(self, annotations: Dict[str, Any]) -> Dict[str, Any]:
+    def get_implementation_attr(self, annotations: Tuple[Tuple[str, Any]]) -> Dict[str, Any]:
         """Get resolved signature attributes"""
         callable_object_arguments = {}
-        for name, annotation in annotations.items():
+        for name, annotation in annotations:
             if name == "self":
                 continue
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional, Tuple
 
 from enum import IntEnum
 from dataclasses import dataclass
@@ -13,5 +13,5 @@ class Scope(IntEnum):
 class DependencyWrapper:
     type_: Any
     target: Any
-    annotations: Optional[Dict[str, Any]] = None
+    annotations: Optional[Tuple[Tuple[str, Any]]] = None
     scope: int = Scope.TRANSIENT
