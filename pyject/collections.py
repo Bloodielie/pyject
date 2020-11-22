@@ -7,15 +7,25 @@ from pyject.base import BaseCondition, IResolver, IConditionCollections
 from pyject.models import DependencyWrapper
 
 
+def _get_dependency_wrapper(annotation: Any, implementation: Any, scope: Union[Scope, int]) -> DependencyWrapper:
+    annotations = get_annotations_to_implementation(implementation)
+    return DependencyWrapper(
+        type_=annotation,
+        target=implementation,
+        annotations=annotations,
+        scope=scope,
+        cache=implementation if annotations is None else None
+    )
+
+
 class DependencyStorage:
     def __init__(self):
         self._dependencies: Dict[Any, List[DependencyWrapper]] = {}
         self._context_dependencies: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(f"_context_storage_{id(self)}")
 
     def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
-        wrapper = DependencyWrapper(
-            type_=annotation, target=implementation, annotations=get_annotations_to_implementation(implementation), scope=scope
-        )
+        wrapper = _get_dependency_wrapper(annotation, implementation, scope)
+
         dependency = self._dependencies.get(annotation, None)
         if dependency is None:
             self._dependencies[annotation] = [wrapper]
@@ -23,9 +33,7 @@ class DependencyStorage:
             dependency.append(wrapper)
 
     def add_context(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
-        wrapper = DependencyWrapper(
-            type_=annotation, target=implementation, annotations=get_annotations_to_implementation(implementation), scope=scope
-        )
+        wrapper = _get_dependency_wrapper(annotation, implementation, scope)
         new_context_dependencies = [wrapper]
 
         context_dependencies = self._context_dependencies.get(None)

@@ -35,7 +35,10 @@ class Resolver(IResolver):
             return dependency_wrapper.target
 
         attr = self.get_implementation_attr(dependency_wrapper.annotations)
-        return dependency_wrapper.target(**attr)
+        resolved_dependency = dependency_wrapper.target(**attr)
+        if dependency_wrapper.scope == Scope.SINGLETON:
+            dependency_wrapper.cache = resolved_dependency
+        return resolved_dependency
 
     def get_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
         """Get attributes from container for typing"""
@@ -49,7 +52,7 @@ class Resolver(IResolver):
             yield self._check_and_get_implementation(dependency_wrapper)
 
     def _check_and_get_implementation(self, dependency_wrapper: DependencyWrapper) -> Any:
-        if dependency_wrapper.scope == Scope.TRANSIENT:
-            return self._get_implementation(dependency_wrapper)
+        if dependency_wrapper.cache is not None and dependency_wrapper.scope == Scope.SINGLETON:
+            return dependency_wrapper.cache
         else:
-            return dependency_wrapper.target
+            return self._get_implementation(dependency_wrapper)

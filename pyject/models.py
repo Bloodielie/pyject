@@ -9,9 +9,10 @@ class Scope(IntEnum):
     TRANSIENT: int = 1
 
 
-@dataclass(frozen=True)
+@dataclass
 class DependencyWrapper:
     type_: Any
     target: Any
     annotations: Optional[Tuple[Tuple[str, Any]]] = None
     scope: int = Scope.TRANSIENT
+    cache: Optional[Any] = None

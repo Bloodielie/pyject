@@ -25,12 +25,7 @@ class Container(IContainer, ContextInstanceMixin):
 
     def add_singleton(self, annotation: Any, implementation: Any) -> None:
         """Add a class that will be initialized once when added"""
-        attrs = self.get_target_attributes(implementation)
-        if attrs is not None:
-            implementation = implementation(**attrs)
-            self._dependency_storage.add(annotation, implementation, Scope.SINGLETON)
-        else:
-            self._dependency_storage.add(annotation, implementation, Scope.SINGLETON)
+        self._dependency_storage.add(annotation, implementation, Scope.SINGLETON)
 
     def add_constant(self, annotation: Any, implementation: Any) -> None:
         """Adds an object that does not need to be initialized"""

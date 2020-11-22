@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Type, TypeVar, List, Any, Dict, Optional, Union, Iterator, overload, Callable, Awaitable
+from typing import Type, TypeVar, List, Any, Dict, Optional, Union, Iterator, overload, Callable, Awaitable, Tuple
 
 from pyject.models import Scope
 
@@ -54,7 +54,7 @@ class IContainer(ABC):
 
 class IResolver(ABC):
     @abstractmethod
-    def get_implementation_attr(self, annotations: Dict[str, Any]) -> Dict[str, Any]:
+    def get_implementation_attr(self, annotations: Tuple[Tuple[str, Any]]) -> Dict[str, Any]:
         """Get resolved signature attributes"""
 
     @abstractmethod

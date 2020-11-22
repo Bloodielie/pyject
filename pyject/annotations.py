@@ -20,7 +20,7 @@ def get_annotations(implementation: Any) -> Dict[str, Any]:
 
 
 def convert_dict_annotation_to_tuple(dict_: Dict[str, Any]) -> Tuple[Tuple[str, Any]]:
-    return tuple(((name, annotation) for name, annotation in dict_.items()))
+    return tuple(((name, annotation) for name, annotation in dict_.items()))  # type: ignore
 
 
 def get_annotations_to_implementation(implementation: Any) -> Optional[Tuple[Tuple[str, Any]]]:
