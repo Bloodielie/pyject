@@ -1,4 +1,4 @@
-from typing import Any, List, TypeVar, Type, Optional, Dict, Union, Callable, Awaitable, overload
+from typing import Any, List, TypeVar, Type, Optional, Dict, Union, Callable, Awaitable, overload, Iterator
 
 from pyject.base import IContainer
 from pyject.exception import DependencyNotFound, DependencyResolvingException
@@ -83,6 +83,16 @@ class Container(IContainer, ContextInstanceMixin):
                 raise DependencyResolvingException("Failed to get target attributes")
             return await target(**attrs)
         raise DependencyResolvingException("Target is not an asynchronous function")
+
+    def override(
+        self,
+        annotation: Any,
+        implementation: Optional[Union[List[Any], Any]] = None,
+        factory: Optional[Union[List[Any], Any]] = None,
+        *,
+        is_clear_cache: bool = False
+    ) -> Iterator[None]:
+        return self._dependency_storage.override(annotation, implementation, factory, is_clear_cache=is_clear_cache)
 
     def __len__(self) -> int:
         return len(self._dependency_storage)

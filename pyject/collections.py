@@ -1,6 +1,8 @@
+from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import List, Optional, Any, Union, Type, Dict, Iterator
 
+from pyject.exception import DependencyNotFound
 from pyject.annotations import get_annotations_to_implementation
 from pyject.models import Scope
 from pyject.base import BaseCondition, IResolver, IConditionCollections
@@ -14,7 +16,7 @@ def _get_dependency_wrapper(annotation: Any, implementation: Any, scope: Union[S
         target=implementation,
         annotations=annotations,
         scope=scope,
-        cache=implementation if annotations is None else None
+        cache=implementation if annotations is None else None,
     )
 
 
@@ -42,6 +44,49 @@ class DependencyStorage:
         else:
             new_context_dependencies.extend(context_dependencies)
             self._context_dependencies.set(new_context_dependencies)
+
+    @contextmanager
+    def override(
+        self,
+        annotation: Any,
+        implementation: Optional[Union[List[Any], Any]] = None,
+        factory: Optional[Union[List[Any], Any]] = None,
+        *,
+        is_clear_cache: bool = False
+    ) -> Iterator[None]:
+        implementation = implementation if implementation is not None else []
+        implementations = implementation if isinstance(implementation, list) else [implementation]
+
+        factory = factory if factory is not None else []
+        factories = factory if isinstance(factory, list) else [factory]
+
+        replaceable_implementation = self._dependencies.get(annotation, None)
+        if replaceable_implementation is None:
+            raise DependencyNotFound("Dependency not found in container")
+
+        spoofed_implementation = []
+        for implementation in implementations:
+            spoofed_implementation.append(
+                DependencyWrapper(type_=annotation, target=implementation, annotations=None, scope=Scope.SINGLETON)
+            )
+
+        for factory in factories:
+            spoofed_implementation.append(_get_dependency_wrapper(annotation, factory, Scope.TRANSIENT))
+
+        try:
+            if is_clear_cache:
+                self.clear_cache()
+            self._dependencies[annotation] = spoofed_implementation
+            yield
+        finally:
+            self._dependencies[annotation] = replaceable_implementation
+
+    def clear_cache(self) -> None:
+        for dependency_wrappers in self._dependencies.values():
+            for dependency_wrapper in dependency_wrappers:
+                if dependency_wrapper.annotations is None and dependency_wrapper.cache is not None:
+                    continue
+                dependency_wrapper.cache = None
 
     def get_dependencies(self, *, ignore_annotation: Optional[Any] = None) -> Iterator[DependencyWrapper]:
         """Get unresolved iterator object/class"""

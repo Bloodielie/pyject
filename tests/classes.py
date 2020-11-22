@@ -23,7 +23,7 @@ class DuckA(DuckInterface):
         self._quack_behavior = squeak
 
     def quack(self):
-        self._quack_behavior.quack()
+        return self._quack_behavior.quack()
 
 
 class DuckB(DuckInterface):
@@ -31,7 +31,7 @@ class DuckB(DuckInterface):
         self._quack_behavior = squeak
 
     def quack(self):
-        self._quack_behavior.quack()
+        return self._quack_behavior.quack()
 
 
 class DuckC(DuckInterface):

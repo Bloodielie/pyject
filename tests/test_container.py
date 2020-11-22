@@ -9,6 +9,7 @@ from pytest import fixture, raises
 from pyject.container import Container
 from tests.classes import QuackBehavior, Sqeak, DuckInterface, DuckA, DuckB, DuckC, duck_d
 from contextvars import copy_context
+from unittest import mock
 
 
 @fixture()
@@ -177,3 +178,31 @@ def test_tuping_not_resolving(container_with_singleton_classes: Container):
 
     with raises(DependencyResolvingException):
         container_with_singleton_classes.get_target_attributes(test_func)
+
+
+def test_override(container_with_singleton_classes):
+    sqeak_mock: Sqeak = mock.Mock(spec=Sqeak)
+    sqeak_mock.quack.return_value = "123"
+
+    with container_with_singleton_classes.override(QuackBehavior, sqeak_mock):
+        duck = container_with_singleton_classes.get(DuckInterface)
+        assert duck.quack() == "123"
+
+    class Test2:
+        def quack(self):
+            return "111"
+
+    class Sqeak2(QuackBehavior):
+        def __init__(self, test: Test2):
+            self.test = test
+
+        def quack(self):
+            return self.test.quack()
+
+    container_with_singleton_classes.add_transient(Test2, Test2)
+
+    with container_with_singleton_classes.override(QuackBehavior, factory=Sqeak2, is_clear_cache=True):
+        quack = container_with_singleton_classes.get(QuackBehavior)
+        assert isinstance(quack, Sqeak2)
+        duck = container_with_singleton_classes.get(DuckInterface)
+        assert duck.quack() == "111"
