@@ -54,6 +54,7 @@ class DependencyStorage:
         *,
         is_clear_cache: bool = False
     ) -> Iterator[None]:
+        """Context manager overriding dependency in with block"""
         implementation = implementation if implementation is not None else []
         implementations = implementation if isinstance(implementation, list) else [implementation]
 
@@ -82,6 +83,7 @@ class DependencyStorage:
             self._dependencies[annotation] = replaceable_implementation
 
     def clear_cache(self) -> None:
+        """clear the singleton dependency cache"""
         for dependency_wrappers in self._dependencies.values():
             for dependency_wrapper in dependency_wrappers:
                 if dependency_wrapper.annotations is None and dependency_wrapper.cache is not None:

@@ -12,8 +12,6 @@ T = TypeVar("T")
 
 
 # todo: сделать поддержку asyncio
-
-
 class Container(IContainer, ContextInstanceMixin):
     def __init__(self) -> None:
         self._dependency_storage = DependencyStorage()
@@ -39,14 +37,30 @@ class Container(IContainer, ContextInstanceMixin):
         """Add a class/object that can only be retrieved in the same context"""
         self._dependency_storage.add_context(annotation, implementation, scope)
 
+    @overload
     def get(self, annotation: Type[T]) -> T:
+        ...
+
+    @overload
+    def get(self, annotation: Any) -> Any:
+        ...
+
+    def get(self, annotation):
         """Get object from container"""
         for dependency in self._resolver.get_resolved_dependencies(annotation):
             return dependency
 
         raise DependencyNotFound("Dependency not found")
 
-    def get_all(self, annotation: Type[T]) -> List[T]:
+    @overload
+    def get_all(self, annotation: Type[T]) -> T:
+        ...
+
+    @overload
+    def get_all(self, annotation: Any) -> Any:
+        ...
+
+    def get_all(self, annotation):
         """Get all object from container"""
         dependencies = []
         for dependency in self._resolver.get_resolved_dependencies(annotation):
@@ -92,7 +106,8 @@ class Container(IContainer, ContextInstanceMixin):
         *,
         is_clear_cache: bool = False
     ) -> Iterator[None]:
-        return self._dependency_storage.override(annotation, implementation, factory, is_clear_cache=is_clear_cache)
+        """Context manager overriding dependency in with block"""
+        return self._dependency_storage.override(annotation, implementation, factory, is_clear_cache=is_clear_cache)  # type: ignore
 
     def __len__(self) -> int:
         return len(self._dependency_storage)

@@ -206,3 +206,10 @@ def test_override(container_with_singleton_classes):
         assert isinstance(quack, Sqeak2)
         duck = container_with_singleton_classes.get(DuckInterface)
         assert duck.quack() == "111"
+
+    class Test:
+        pass
+
+    with raises(DependencyNotFound):
+        with container_with_singleton_classes.override(Test, Sqeak2):
+            pass
