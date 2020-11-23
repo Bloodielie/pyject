@@ -11,7 +11,7 @@ def get_annotations(implementation: Any) -> Dict[str, Any]:
     if implementation_code is None:
         return type_hints
 
-    for argument in implementation.__code__.co_varnames:
+    for argument in implementation_code.co_varnames[:implementation_code.co_argcount]:
         if argument in type_hints:
             continue
         type_hints[argument] = Any
