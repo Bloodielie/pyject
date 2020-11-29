@@ -61,7 +61,6 @@ class CollectionCondition(BaseCondition):
     def get_attributes(self, typing: Any) -> List[Dict[str, Any]]:
         field_attributes = []
         for inner_type in typing.__args__:
-            print(inner_type)
             for dependency in self._resolver.get_resolved_dependencies(inner_type):
                 field_attributes.append(dependency)
 
