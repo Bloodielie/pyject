@@ -13,7 +13,7 @@ def dependency_storage():
 
 
 @fixture()
-def filled_resolver(dependency_storage):
+def resolver(dependency_storage):
     dependency_storage.add(QuackBehavior, Sqeak, Scope.TRANSIENT)
     dependency_storage.add(DuckInterface, DuckA, Scope.TRANSIENT)
     dependency_storage.add(DuckInterface, DuckB, Scope.TRANSIENT)
@@ -21,21 +21,21 @@ def filled_resolver(dependency_storage):
     return Resolver(dependency_storage)
 
 
-def test_get_resolved_dependencies(filled_resolver):
-    for duck in filled_resolver.get_resolved_dependencies(DuckInterface):
+def test_get_resolved_dependencies(resolver):
+    for duck in resolver.get_resolved_dependencies(DuckInterface):
         assert isinstance(duck, DuckInterface)
 
-    for sqeak in filled_resolver.get_resolved_dependencies(QuackBehavior):
+    for sqeak in resolver.get_resolved_dependencies(QuackBehavior):
         assert isinstance(sqeak, QuackBehavior)
 
 
-def test_get_implementation_attr(filled_resolver):
-    attrs = filled_resolver.get_implementation_attr(tuple([("squeak", QuackBehavior), ("self", typing.Any)]))
+def test_get_implementation_attr(resolver):
+    attrs = resolver.get_implementation_attr(tuple([("squeak", QuackBehavior), ("self", typing.Any)]))
     assert isinstance(attrs, dict) is True
     for key, value in attrs.items():
         assert isinstance(key, str) is True
         assert key == "squeak"
         assert isinstance(value, QuackBehavior) is True
 
-    attrs = filled_resolver.get_implementation_attr(tuple())
+    attrs = resolver.get_implementation_attr(tuple())
     assert isinstance(attrs, dict) is True

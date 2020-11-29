@@ -58,13 +58,18 @@ class IResolver(ABC):
         """Get resolved signature attributes"""
 
     @abstractmethod
+    def get_forwardref_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
+        """An iterator that returns resolved dependencies"""
+
+    @abstractmethod
     def get_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
         """An iterator that returns resolved dependencies"""
 
 
 class BaseCondition(ABC):
-    def __init__(self, resolver: IResolver):
+    def __init__(self, resolver: IResolver, dependency_storage):
         self._resolver = resolver
+        self._dependency_storage = dependency_storage
 
     @abstractmethod
     def check_typing(self, typing: Any) -> bool:

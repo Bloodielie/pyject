@@ -7,7 +7,8 @@ from pyject.exception import DependencyNotFound, DependencyResolvingException
 from pytest import fixture, raises
 
 from pyject.container import Container
-from tests.classes import QuackBehavior, Sqeak, DuckInterface, DuckA, DuckB, DuckC, duck_d
+from pyject.types import ForwardRef
+from tests.classes import QuackBehavior, Sqeak, DuckInterface, DuckA, DuckB, DuckC, duck_d, Test1, Test2
 from contextvars import copy_context
 from unittest import mock
 
@@ -213,3 +214,15 @@ def test_override(container_with_singleton_classes):
     with raises(DependencyNotFound):
         with container_with_singleton_classes.override(Test, Sqeak2):
             pass
+
+
+def test_circular_dependency(container):
+    container.add_singleton(Test1, Test1)
+    container.add_singleton(Test2, Test2)
+
+    test1 = container.get(Test1)
+    assert isinstance(test1, Test1)
+    assert isinstance(test1.test2, ForwardRef)
+    assert isinstance(test1.test2.test1, ForwardRef)
+    assert test1.test1() == "123"
+    assert test1.test1() == test1.test2.test2()

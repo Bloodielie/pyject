@@ -4,7 +4,8 @@ from pyject.models import Scope, DependencyWrapper
 from pyject.base import IResolver
 from pyject.collections import DependencyStorage, ConditionCollections
 from pyject.utils import _check_annotation
-from pyject.conditions import DefaultCondition, AnyCondition, CollectionCondition, UnionCondition, IteratorCondition
+from pyject.conditions import DefaultCondition, AnyCondition, CollectionCondition, UnionCondition, IteratorCondition, \
+    ForwardRefCondition
 
 T = TypeVar("T")
 
@@ -16,7 +17,10 @@ class Resolver(IResolver):
     ) -> None:
         self._dependency_storage = dependency_storage
         self._condition_collections = ConditionCollections(
-            self, [AnyCondition, CollectionCondition, UnionCondition, IteratorCondition], default_condition=DefaultCondition
+            self,
+            dependency_storage,
+            [AnyCondition, CollectionCondition, UnionCondition, IteratorCondition, ForwardRefCondition],
+            default_condition=DefaultCondition
         )
 
     def get_implementation_attr(self, annotations: Tuple[Tuple[str, Any]]) -> Dict[str, Any]:
@@ -39,6 +43,12 @@ class Resolver(IResolver):
         if dependency_wrapper.scope == Scope.SINGLETON:
             dependency_wrapper.cache = resolved_dependency
         return resolved_dependency
+
+    def get_forwardref_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
+        for dependency_wrapper in self._dependency_storage.get_forwardref_dependencies():
+            if not _check_annotation(typing, dependency_wrapper.type_):
+                continue
+            yield self._check_and_get_implementation(dependency_wrapper)
 
     def get_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
         """Get attributes from container for typing"""

@@ -2,6 +2,7 @@ from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn
 
 from pyject.base import BaseCondition
 from pyject.exception import DependencyResolvingException
+from pyject.types import ForwardRef
 from pyject.utils import check_generic_typing, check_union_typing
 
 
@@ -60,6 +61,7 @@ class CollectionCondition(BaseCondition):
     def get_attributes(self, typing: Any) -> List[Dict[str, Any]]:
         field_attributes = []
         for inner_type in typing.__args__:
+            print(inner_type)
             for dependency in self._resolver.get_resolved_dependencies(inner_type):
                 field_attributes.append(dependency)
 
@@ -83,3 +85,20 @@ class IteratorCondition(BaseCondition):
         for typing in typings:
             for dependency in self._resolver.get_resolved_dependencies(typing):
                 yield dependency
+
+
+class ForwardRefCondition(BaseCondition):
+    _type_names_to_check = {"ForwardRef"}
+
+    def check_typing(self, typing: Any) -> bool:
+        origin = getattr(typing, "__origin__", None)
+        if origin is None:
+            return False
+        if issubclass(origin, ForwardRef):
+            return True
+        return False
+
+    def get_attributes(self, typing: Any) -> ForwardRef:
+        forward_ref = typing(self._resolver, self._dependency_storage)
+        forward_ref._ForwardRef__set_generic_typing(forward_ref.__orig_class__.__args__[0])
+        return forward_ref

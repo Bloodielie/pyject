@@ -24,6 +24,9 @@ class DependencyStorage:
     def __init__(self):
         self._dependencies: Dict[Any, List[DependencyWrapper]] = {}
         self._context_dependencies: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(f"_context_storage_{id(self)}")
+        self._forwardref_dependencies: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(
+            f"_forwardref_dependencies{id(self)}"
+        )
 
     def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = _get_dependency_wrapper(annotation, implementation, scope)
@@ -36,6 +39,17 @@ class DependencyStorage:
 
     def add_context(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = _get_dependency_wrapper(annotation, implementation, scope)
+        new_context_dependencies = [wrapper]
+
+        context_dependencies = self._context_dependencies.get(None)
+        if context_dependencies is None:
+            self._context_dependencies.set(new_context_dependencies)
+        else:
+            new_context_dependencies.extend(context_dependencies)
+            self._context_dependencies.set(new_context_dependencies)
+
+    def add_forwardref(self, implementation: Any) -> None:
+        wrapper = _get_dependency_wrapper(type(implementation), implementation, Scope.SINGLETON)
         new_context_dependencies = [wrapper]
 
         context_dependencies = self._context_dependencies.get(None)
@@ -90,6 +104,10 @@ class DependencyStorage:
                     continue
                 dependency_wrapper.cache = None
 
+    def get_forwardref_dependencies(self) -> Iterator[DependencyWrapper]:
+        for dependency_wrapper in self._forwardref_dependencies.get([]):  # type: ignore
+            yield dependency_wrapper
+
     def get_dependencies(self, *, ignore_annotation: Optional[Any] = None) -> Iterator[DependencyWrapper]:
         """Get unresolved iterator object/class"""
         for dependency_wrapper in self._context_dependencies.get([]):  # type: ignore
@@ -113,10 +131,12 @@ class ConditionCollections(IConditionCollections):
     def __init__(
         self,
         resolver: IResolver,
+        dependency_storage: DependencyStorage,
         conditions: Optional[List[Type[BaseCondition]]] = None,
         default_condition: Optional[Type[BaseCondition]] = None,
     ) -> None:
         self._resolver = resolver
+        self._dependency_storage = dependency_storage
 
         self._conditions = []
         if conditions is not None:
@@ -139,7 +159,7 @@ class ConditionCollections(IConditionCollections):
         return None
 
     def _resolve_condition(self, condition: Type[BaseCondition]) -> BaseCondition:
-        return condition(self._resolver)
+        return condition(self._resolver, self._dependency_storage)
 
     def __iter__(self) -> Iterator[BaseCondition]:
         for condition in self._conditions:
