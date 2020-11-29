@@ -71,10 +71,10 @@ def test2(ducks: List[DuckInterface]):
 
 assert container.resolve(test2) == "Quack_1Quack_2"
 ```
-##Non-default types
+## Non-default types
 <a name="Sequence_example"></a>
 
-###Sequence
+### Sequence
 ```python
 def list_typing(ducks: List[DuckInterface]):
     result_ = ""
@@ -92,7 +92,7 @@ assert container.resolve(list_typing) == "Quack_1Quack_2"
 assert container.resolve(sequence_typing) == "Quack_1Quack_2"
 ```
 <a name="Union_example"></a>
-###Union
+### Union
 ```python
 def union_typing(quack: Union[QuackBehavior, DuckInterface]):
     return quack
