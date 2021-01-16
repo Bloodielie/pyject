@@ -152,10 +152,10 @@ class ConditionCollections(IConditionCollections):
         """Finding a condition for type and getting attributes"""
         for condition in self._conditions:
             if condition.check_typing(typing):
-                return condition.get_attributes(typing)
+                return condition.handle(typing)
 
         if self._default_condition is not None:
-            return self._default_condition.get_attributes(typing)
+            return self._default_condition.handle(typing)
         return None
 
     def _resolve_condition(self, condition: Type[BaseCondition]) -> BaseCondition:

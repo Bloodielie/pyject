@@ -10,7 +10,7 @@ class DefaultCondition(BaseCondition):
     def check_typing(self, typing: Any) -> bool:
         return True
 
-    def get_attributes(self, typing: Any) -> Dict[str, Any]:
+    def handle(self, typing: Any) -> Dict[str, Any]:
         for dependency in self._resolver.get_resolved_dependencies(typing):
             return dependency
 
@@ -25,7 +25,7 @@ class AnyCondition(BaseCondition):
             return False
         return True
 
-    def get_attributes(self, typing: Any) -> NoReturn:
+    def handle(self, typing: Any) -> NoReturn:
         raise DependencyResolvingException(f"Any or empty annotation is not supported")
 
 
@@ -35,7 +35,7 @@ class UnionCondition(BaseCondition):
             return False
         return True
 
-    def get_attributes(self, typing: Any) -> Optional[Dict[str, Any]]:
+    def handle(self, typing: Any) -> Optional[Dict[str, Any]]:
         args = typing.__args__
 
         if len(args) == 2 and args[1] is type(None):
@@ -58,7 +58,7 @@ class CollectionCondition(BaseCondition):
             return False
         return True
 
-    def get_attributes(self, typing: Any) -> List[Dict[str, Any]]:
+    def handle(self, typing: Any) -> List[Dict[str, Any]]:
         field_attributes = []
         for inner_type in typing.__args__:
             for dependency in self._resolver.get_resolved_dependencies(inner_type):
@@ -77,7 +77,7 @@ class IteratorCondition(BaseCondition):
             return False
         return True
 
-    def get_attributes(self, typing: Any) -> Iterator[Any]:
+    def handle(self, typing: Any) -> Iterator[Any]:
         return self._iterator(typing.__args__)
 
     def _iterator(self, typings: Sequence[Any]):
@@ -97,7 +97,7 @@ class ForwardRefCondition(BaseCondition):
             return True
         return False
 
-    def get_attributes(self, typing: Any) -> ForwardRef:
+    def handle(self, typing: Any) -> ForwardRef:
         forward_ref = typing(self._resolver, self._dependency_storage)
         forward_ref._ForwardRef__set_generic_typing(forward_ref.__orig_class__.__args__[0])
         return forward_ref

@@ -76,7 +76,7 @@ class BaseCondition(ABC):
         """Get attributes from container for typing"""
 
     @abstractmethod
-    def get_attributes(self, typing: Any) -> Any:
+    def handle(self, typing: Any) -> Any:
         """Get attributes from container for typing"""
 
 

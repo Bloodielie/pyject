@@ -2,7 +2,7 @@ import inspect
 from typing import Any, TypeVar, Type, Iterable, Union, Callable, Awaitable
 import contextvars
 
-T = TypeVar("T")
+T = TypeVar("T", bound="ContextInstanceMixin")
 
 
 def _check_annotation(annotation: Any, dependency: Any) -> bool:
