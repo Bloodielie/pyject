@@ -208,6 +208,10 @@ def test_override(container_with_singleton_classes):
         duck = container_with_singleton_classes.get(DuckInterface)
         assert duck.quack() == "111"
 
+    container_with_singleton_classes.override(QuackBehavior, sqeak_mock)()
+    duck = container_with_singleton_classes.get(DuckInterface)
+    assert duck.quack() == "123"
+
     class Test:
         pass
 

@@ -3,7 +3,7 @@ from typing import Any, List, TypeVar, Type, Optional, Dict, Union, Callable, Aw
 from pyject.base import IContainer
 from pyject.exception import DependencyNotFound, DependencyResolvingException
 from pyject.models import Scope
-from pyject.collections import DependencyStorage
+from pyject.collections import DependencyStorage, DependencyStorageOverrideContext
 from pyject.resolver import Resolver
 from pyject.annotations import get_annotations_to_implementation
 from pyject.utils import ContextInstanceMixin, is_coroutine_callable
@@ -104,8 +104,8 @@ class Container(IContainer, ContextInstanceMixin):
         implementation: Optional[Union[List[Any], Any]] = None,
         factory: Optional[Union[List[Any], Any]] = None,
         *,
-        is_clear_cache: bool = False
-    ) -> Iterator[None]:
+        is_clear_cache: bool = True
+    ) -> DependencyStorageOverrideContext:
         """Context manager overriding dependency in with block"""
         return self._dependency_storage.override(annotation, implementation, factory, is_clear_cache=is_clear_cache)  # type: ignore
 

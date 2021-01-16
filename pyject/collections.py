@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import List, Optional, Any, Union, Type, Dict, Iterator
 
@@ -18,6 +17,35 @@ def _get_dependency_wrapper(annotation: Any, implementation: Any, scope: Union[S
         scope=scope,
         cache=implementation if annotations is None else None,
     )
+
+
+class DependencyStorageOverrideContext:
+    def __init__(
+        self,
+        dependency_storage: "DependencyStorage",
+        annotation: Any,
+        spoofed_implementations: List[Any],
+        replaceable_implementations: List[Any],
+        is_clear_cache: bool = True
+    ) -> None:
+        self._dependency_storage = dependency_storage
+        self._annotation = annotation
+        self._spoofed_implementations = spoofed_implementations
+        self._replaceable_implementations = replaceable_implementations
+        self._is_clear_cache = is_clear_cache
+
+    def __enter__(self) -> None:
+        self._dependency_storage._override(
+            self._annotation, self._spoofed_implementations, is_clear_cache=self._is_clear_cache
+        )
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self._dependency_storage._release_overdetermined_dependency(self._annotation, self._replaceable_implementations)
+
+    def __call__(self, *args, **kwargs):
+        self._dependency_storage._override(
+            self._annotation, self._spoofed_implementations, is_clear_cache=self._is_clear_cache
+        )
 
 
 class DependencyStorage:
@@ -59,15 +87,14 @@ class DependencyStorage:
             new_context_dependencies.extend(context_dependencies)
             self._context_dependencies.set(new_context_dependencies)
 
-    @contextmanager
     def override(
         self,
         annotation: Any,
         implementation: Optional[Union[List[Any], Any]] = None,
         factory: Optional[Union[List[Any], Any]] = None,
         *,
-        is_clear_cache: bool = False
-    ) -> Iterator[None]:
+        is_clear_cache: bool = True
+    ) -> DependencyStorageOverrideContext:
         """Context manager overriding dependency in with block"""
         implementation = implementation if implementation is not None else []
         implementations = implementation if isinstance(implementation, list) else [implementation]
@@ -75,26 +102,36 @@ class DependencyStorage:
         factory = factory if factory is not None else []
         factories = factory if isinstance(factory, list) else [factory]
 
-        replaceable_implementation = self._dependencies.get(annotation, None)
-        if replaceable_implementation is None:
+        replaceable_implementations = self._dependencies.get(annotation, None)
+        if replaceable_implementations is None:
             raise DependencyNotFound("Dependency not found in container")
 
-        spoofed_implementation = []
+        spoofed_implementations = []
         for implementation in implementations:
-            spoofed_implementation.append(
+            spoofed_implementations.append(
                 DependencyWrapper(type_=annotation, target=implementation, annotations=None, scope=Scope.SINGLETON)
             )
 
         for factory in factories:
-            spoofed_implementation.append(_get_dependency_wrapper(annotation, factory, Scope.TRANSIENT))
+            spoofed_implementations.append(_get_dependency_wrapper(annotation, factory, Scope.TRANSIENT))
 
-        try:
-            if is_clear_cache:
-                self.clear_cache()
-            self._dependencies[annotation] = spoofed_implementation
-            yield
-        finally:
-            self._dependencies[annotation] = replaceable_implementation
+        return DependencyStorageOverrideContext(
+            self, annotation, spoofed_implementations, replaceable_implementations, is_clear_cache
+        )
+
+    def _override(
+        self,
+        annotation: Any,
+        spoofed_implementations: List[Any],
+        *,
+        is_clear_cache: bool = True
+    ) -> None:
+        if is_clear_cache:
+            self.clear_cache()
+        self._dependencies[annotation] = spoofed_implementations
+
+    def _release_overdetermined_dependency(self, annotation: Any, replaceable_implementations: List[Any]) -> None:
+        self._dependencies[annotation] = replaceable_implementations
 
     def clear_cache(self) -> None:
         """clear the singleton dependency cache"""
