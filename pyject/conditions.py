@@ -3,7 +3,7 @@ from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn
 from pyject.base import BaseCondition
 from pyject.exception import DependencyResolvingException
 from pyject.types import ForwardRef
-from pyject.utils import check_generic_typing, check_union_typing
+from pyject.utils import check_generic_typing, check_union_typing, check_collection_typing
 
 
 class DefaultCondition(BaseCondition):
@@ -51,10 +51,8 @@ class UnionCondition(BaseCondition):
 
 
 class CollectionCondition(BaseCondition):
-    _type_names_to_check = {"Set", "List", "Tuple", "FrozenSet", "Sequence"}
-
     def check_typing(self, typing: Any) -> bool:
-        if not check_generic_typing(typing, self._type_names_to_check):
+        if not check_collection_typing(typing):
             return False
         return True
 

@@ -1,8 +1,41 @@
 import inspect
+import sys
 from typing import Any, TypeVar, Type, Iterable, Union, Callable, Awaitable
 import contextvars
 
 T = TypeVar("T", bound="ContextInstanceMixin")
+
+
+if sys.version_info >= (3, 9):
+    from typing import get_origin
+
+    collection_classes = [list, tuple, set, frozenset]
+    _collection_typing_name = "Sequence"
+
+    def check_collection_typing(annotation: Any) -> bool:
+        origin = get_origin(annotation)
+        if origin in collection_classes:
+            return True
+
+        annotation_type_name = getattr(annotation, "_name", None)
+        if annotation_type_name is None:
+            return False
+
+        if annotation_type_name is not None and annotation_type_name == _collection_typing_name:
+            return True
+        return False
+else:
+    _collection_typing_name = {"Set", "List", "Tuple", "FrozenSet", "Sequence"}
+
+
+    def check_collection_typing(annotation: Any) -> bool:
+        annotation_type_name = getattr(annotation, "_name", None)
+        if annotation_type_name is None:
+            return False
+
+        if annotation_type_name is not None and annotation_type_name in _collection_typing_name:
+            return True
+        return False
 
 
 def _check_annotation(annotation: Any, dependency: Any) -> bool:
