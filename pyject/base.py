@@ -20,7 +20,7 @@ class IContainer(ABC):
         """Add a class that will be initialized with each request"""
 
     @abstractmethod
-    def add_context(self, annotation: Type[T], implementation: T, *, scope: Union[Scope, int] = Scope.TRANSIENT) -> None:
+    def add_context(self, annotation: Type[T], implementation: T) -> None:
         """Add a class/object that can only be retrieved in the same context"""
 
     @abstractmethod

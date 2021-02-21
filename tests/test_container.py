@@ -102,24 +102,17 @@ def test_singleton_obj(container_with_singleton_classes):
 
 def test_context_scope(container):
     container.add_context(QuackBehavior, Sqeak)
-    squeak = container.get(QuackBehavior)
-    assert isinstance(squeak, QuackBehavior)
-    assert squeak != container.get(QuackBehavior)
 
-    def test_1(container):
-        container.add_context(DuckInterface, DuckA)
-        duck = container.get(DuckInterface)
-        assert isinstance(duck, DuckInterface)
+    def test2(container):
+        assert container.get(QuackBehavior) == container.get(QuackBehavior)
+        return container.get(QuackBehavior)
 
-    def test_2(container):
-        container.get(DuckInterface)
+    def test(container):
+        ctx_1 = copy_context()
+        quack_behavior = ctx_1.run(test2, container)
+        assert quack_behavior != container.get(QuackBehavior)
 
-    ctx_1 = copy_context()
-    ctx_1.run(test_1, container)
-
-    ctx_2 = copy_context()
-    with raises(DependencyNotFound):
-        ctx_2.run(test_2, container)
+    test(container)
 
 
 def test_list_attr(container_with_singleton_classes: Container):

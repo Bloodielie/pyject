@@ -7,6 +7,7 @@ from dataclasses import dataclass
 class Scope(IntEnum):
     SINGLETON: int = 0
     TRANSIENT: int = 1
+    CONTEXT: int = 2
 
 
 @dataclass

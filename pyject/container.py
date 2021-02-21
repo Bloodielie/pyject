@@ -38,9 +38,9 @@ class Container(IContainer, ContextInstanceMixin):
         """Add a class that will be initialized with each request"""
         self._dependency_storage.add(annotation, implementation, Scope.TRANSIENT)
 
-    def add_context(self, annotation: Any, implementation: Any, *, scope: Union[Scope, int] = Scope.TRANSIENT) -> None:
+    def add_context(self, annotation: Any, implementation: Any) -> None:
         """Add a class/object that can only be retrieved in the same context"""
-        self._dependency_storage.add_context(annotation, implementation, scope)
+        self._dependency_storage.add(annotation, implementation, Scope.CONTEXT)
 
     @overload
     def get(self, annotation: Type[T]) -> T:

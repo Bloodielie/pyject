@@ -3,7 +3,16 @@ import sys
 from typing import Any, TypeVar, Type, Iterable, Union, Callable, Awaitable
 import contextvars
 
+if sys.version_info == (3, 7):
+    from typing_extensions import get_args
+else:
+    from typing import get_args
+
 T = TypeVar("T", bound="ContextInstanceMixin")
+
+
+def get_typing_args(typing):
+    return get_args(typing)
 
 
 if sys.version_info >= (3, 9):

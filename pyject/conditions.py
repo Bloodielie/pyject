@@ -1,15 +1,10 @@
 import sys
-from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn
+from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn, get_args
 
 from pyject.base import BaseCondition
 from pyject.exception import DependencyResolvingException
 from pyject.types import ForwardRef
-from pyject.utils import check_generic_typing, check_union_typing, check_collection_typing
-
-if sys.version_info == (3, 7):
-    from typing_extensions import get_args
-else:
-    from typing import get_args
+from pyject.utils import check_generic_typing, check_union_typing, check_collection_typing, get_typing_args
 
 
 class DefaultCondition(BaseCondition):
@@ -25,7 +20,7 @@ class DefaultCondition(BaseCondition):
 
 class GenericCondition(BaseCondition):
     def check_typing(self, typing: Any) -> bool:
-        if not get_args(typing):
+        if not get_typing_args(typing):
             return False
         return True
 
