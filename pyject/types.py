@@ -39,12 +39,8 @@ class ForwardRef(Generic[T]):
 
     def __getattr__(self, item: str) -> Any:
         if self.__instance is None:
-            for instance in self.__resolver.get_forwardref_resolved_dependencies(self.__generic_typing):
+            for instance in self.__resolver.get_resolved_dependencies(self.__generic_typing):
                 self.__set_instance(instance)
                 break
-            if self.__instance is None:
-                for instance in self.__resolver.get_resolved_dependencies(self.__generic_typing):
-                    self.__set_instance(instance)
-                    break
-                self.__dependency_storage.add_forwardref(self.__instance)
+
         return getattr(self.__instance, item)

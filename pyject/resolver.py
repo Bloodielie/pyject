@@ -25,7 +25,7 @@ class Resolver(IResolver):
                 CollectionCondition,
                 UnionCondition,
                 IteratorCondition,
-                # ForwardRefCondition,
+                ForwardRefCondition,
                 GenericCondition
             ],
             default_condition=DefaultCondition
@@ -73,12 +73,6 @@ class Resolver(IResolver):
         elif dependency_wrapper.scope == Scope.CONTEXT:
             self._add_scoped_dependency(dependency_wrapper, resolved_dependency)
         return resolved_dependency
-
-    def get_forwardref_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
-        for dependency_wrapper in self._dependency_storage.get_forwardref_dependencies():
-            if not _check_annotation(typing, dependency_wrapper.type_):
-                continue
-            yield self._check_and_get_implementation(dependency_wrapper)
 
     def get_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
         """Get attributes from container for typing"""

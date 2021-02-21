@@ -54,9 +54,6 @@ class DependencyStorageOverrideContext:
 class DependencyStorage:
     def __init__(self):
         self._dependencies: Dict[Any, List[DependencyWrapper]] = {}
-        self._forwardref_dependencies: ContextVar[Optional[List[DependencyWrapper]]] = ContextVar(
-            f"_forwardref_dependencies{id(self)}"
-        )
 
     def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = _get_dependency_wrapper(annotation, implementation, scope)
@@ -70,17 +67,6 @@ class DependencyStorage:
             self._dependencies[annotation] = [wrapper]
         else:
             dependency.append(wrapper)
-
-    def add_forwardref(self, implementation: Any) -> None:
-        wrapper = _get_dependency_wrapper(type(implementation), implementation, Scope.SINGLETON)
-        new_context_dependencies = [wrapper]
-
-        context_dependencies = self._forwardref_dependencies.get(None)
-        if context_dependencies is None:
-            self._forwardref_dependencies.set(new_context_dependencies)
-        else:
-            new_context_dependencies.extend(context_dependencies)
-            self._forwardref_dependencies.set(new_context_dependencies)
 
     def override(
         self,
@@ -135,10 +121,6 @@ class DependencyStorage:
                 if dependency_wrapper.annotations is None and dependency_wrapper.cache is not None:
                     continue
                 dependency_wrapper.cache = None
-
-    def get_forwardref_dependencies(self) -> Iterator[DependencyWrapper]:
-        for dependency_wrapper in self._forwardref_dependencies.get([]):  # type: ignore
-            yield dependency_wrapper
 
     def get_dependencies(self, *, ignore_annotation: Optional[Any] = None) -> Iterator[DependencyWrapper]:
         """Get unresolved iterator object/class"""

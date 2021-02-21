@@ -58,10 +58,6 @@ class IResolver(ABC):
         """Get resolved signature attributes"""
 
     @abstractmethod
-    def get_forwardref_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
-        """An iterator that returns resolved dependencies"""
-
-    @abstractmethod
     def get_resolved_dependencies(self, typing: Any) -> Iterator[Any]:
         """An iterator that returns resolved dependencies"""
 
