@@ -1,3 +1,4 @@
+import sys
 from contextvars import ContextVar
 from typing import List, Optional, Any, Union, Type, Dict, Iterator
 
@@ -7,15 +8,22 @@ from pyject.models import Scope
 from pyject.base import BaseCondition, IResolver, IConditionCollections
 from pyject.models import DependencyWrapper
 
+if sys.version_info == (3, 7):
+    from typing_extensions import get_args
+else:
+    from typing import get_args
+
 
 def _get_dependency_wrapper(annotation: Any, implementation: Any, scope: Union[Scope, int]) -> DependencyWrapper:
     annotations = get_annotations_to_implementation(implementation)
+    type_args = get_args(annotation)
     return DependencyWrapper(
         type_=annotation,
         target=implementation,
         annotations=annotations,
         scope=scope,
         cache=implementation if annotations is None else None,
+        type_arguments=type_args
     )
 
 
@@ -59,12 +67,17 @@ class DependencyStorage:
     def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = _get_dependency_wrapper(annotation, implementation, scope)
 
+        type_args = get_args(annotation)
+        if type_args:
+            annotation = (annotation, type_args)
+
         dependency = self._dependencies.get(annotation, None)
         if dependency is None:
             self._dependencies[annotation] = [wrapper]
         else:
             dependency.append(wrapper)
 
+    # todo: maybe fix generic typing
     def add_context(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = _get_dependency_wrapper(annotation, implementation, scope)
         new_context_dependencies = [wrapper]
@@ -77,15 +90,17 @@ class DependencyStorage:
             self._context_dependencies.set(new_context_dependencies)
 
     def add_forwardref(self, implementation: Any) -> None:
-        wrapper = _get_dependency_wrapper(type(implementation), implementation, Scope.SINGLETON)
-        new_context_dependencies = [wrapper]
+        self.add_context(type(implementation), implementation, Scope.SINGLETON)
 
-        context_dependencies = self._context_dependencies.get(None)
-        if context_dependencies is None:
-            self._context_dependencies.set(new_context_dependencies)
-        else:
-            new_context_dependencies.extend(context_dependencies)
-            self._context_dependencies.set(new_context_dependencies)
+        # wrapper = _get_dependency_wrapper(type(implementation), implementation, Scope.SINGLETON)
+        # new_context_dependencies = [wrapper]
+        #
+        # context_dependencies = self._context_dependencies.get(None)
+        # if context_dependencies is None:
+        #     self._context_dependencies.set(new_context_dependencies)
+        # else:
+        #     new_context_dependencies.extend(context_dependencies)
+        #     self._context_dependencies.set(new_context_dependencies)
 
     def override(
         self,

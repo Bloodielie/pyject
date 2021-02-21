@@ -5,7 +5,7 @@ from pyject.base import IResolver
 from pyject.collections import DependencyStorage, ConditionCollections
 from pyject.utils import _check_annotation
 from pyject.conditions import DefaultCondition, AnyCondition, CollectionCondition, UnionCondition, IteratorCondition, \
-    ForwardRefCondition
+    ForwardRefCondition, GenericCondition
 
 T = TypeVar("T")
 
@@ -19,7 +19,14 @@ class Resolver(IResolver):
         self._condition_collections = ConditionCollections(
             self,
             dependency_storage,
-            [AnyCondition, CollectionCondition, UnionCondition, IteratorCondition, ForwardRefCondition],
+            [
+                AnyCondition,
+                CollectionCondition,
+                UnionCondition,
+                IteratorCondition,
+                ForwardRefCondition,
+                GenericCondition
+            ],
             default_condition=DefaultCondition
         )
 

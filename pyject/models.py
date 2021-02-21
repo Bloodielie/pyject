@@ -16,3 +16,4 @@ class DependencyWrapper:
     annotations: Optional[Tuple[Tuple[str, Any]]] = None
     scope: int = Scope.TRANSIENT
     cache: Optional[Any] = None
+    type_arguments: Tuple = ()

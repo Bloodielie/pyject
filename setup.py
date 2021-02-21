@@ -57,5 +57,6 @@ setuptools.setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
+    install_requires=["typing_extensions >= 3.7.4.3"],
     zip_safe=False,
 )

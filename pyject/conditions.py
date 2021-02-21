@@ -1,9 +1,15 @@
+import sys
 from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn
 
 from pyject.base import BaseCondition
 from pyject.exception import DependencyResolvingException
 from pyject.types import ForwardRef
 from pyject.utils import check_generic_typing, check_union_typing, check_collection_typing
+
+if sys.version_info == (3, 7):
+    from typing_extensions import get_args
+else:
+    from typing import get_args
 
 
 class DefaultCondition(BaseCondition):
@@ -12,6 +18,19 @@ class DefaultCondition(BaseCondition):
 
     def handle(self, typing: Any) -> Dict[str, Any]:
         for dependency in self._resolver.get_resolved_dependencies(typing):
+            return dependency
+
+        raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
+
+
+class GenericCondition(BaseCondition):
+    def check_typing(self, typing: Any) -> bool:
+        if not get_args(typing):
+            return False
+        return True
+
+    def handle(self, typing: Any) -> Dict[str, Any]:
+        for dependency in self._resolver.get_resolved_dependencies((typing, get_args(typing))):
             return dependency
 
         raise DependencyResolvingException(f"There is no such dependency in the container {typing}")

@@ -1,3 +1,4 @@
+import sys
 from typing import Any, List, TypeVar, Type, Optional, Dict, Union, Callable, Awaitable, overload, Iterator
 
 from pyject.base import IContainer
@@ -8,10 +9,14 @@ from pyject.resolver import Resolver
 from pyject.annotations import get_annotations_to_implementation
 from pyject.utils import ContextInstanceMixin, is_coroutine_callable
 
+if sys.version_info == (3, 7):
+    from typing_extensions import get_args
+else:
+    from typing import get_args
+
 T = TypeVar("T")
 
 
-# todo: сделать поддержку asyncio
 class Container(IContainer, ContextInstanceMixin):
     def __init__(self) -> None:
         self._dependency_storage = DependencyStorage()
@@ -47,6 +52,10 @@ class Container(IContainer, ContextInstanceMixin):
 
     def get(self, annotation):
         """Get object from container"""
+        type_args = get_args(annotation)
+        if type_args:
+            annotation = (annotation, type_args)
+
         for dependency in self._resolver.get_resolved_dependencies(annotation):
             return dependency
 
@@ -62,6 +71,10 @@ class Container(IContainer, ContextInstanceMixin):
 
     def get_all(self, annotation):
         """Get all object from container"""
+        type_args = get_args(annotation)
+        if type_args:
+            annotation = (annotation, type_args)
+
         dependencies = []
         for dependency in self._resolver.get_resolved_dependencies(annotation):
             dependencies.append(dependency)
