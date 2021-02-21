@@ -8,7 +8,8 @@ from pytest import fixture, raises
 
 from pyject.container import Container
 from pyject.types import ForwardRef
-from tests.classes import QuackBehavior, Sqeak, DuckInterface, DuckA, DuckB, DuckC, duck_d, Test1, Test2
+from tests.classes import QuackBehavior, Sqeak, DuckInterface, DuckA, DuckB, DuckC, duck_d, Test1, Test2, \
+    GenericDuckInterface, DuckA2, DuckB2
 from contextvars import copy_context
 from unittest import mock
 
@@ -223,3 +224,15 @@ def test_circular_dependency(container):
     assert isinstance(test1.test2.test1, ForwardRef)
     assert test1.test1() == "123"
     assert test1.test1() == test1.test2.test2()
+
+
+def test_generic_dependency(container):
+    container.add_singleton(QuackBehavior, Sqeak)
+    container.add_transient(GenericDuckInterface[int], DuckA2)
+    container.add_transient(GenericDuckInterface[str], DuckB2)
+
+    assert isinstance(container.get(GenericDuckInterface[int]), DuckA2)
+    assert isinstance(container.get(GenericDuckInterface[int]), GenericDuckInterface)
+
+    assert isinstance(container.get(GenericDuckInterface[str]), DuckB2)
+    assert isinstance(container.get(GenericDuckInterface[str]), GenericDuckInterface)

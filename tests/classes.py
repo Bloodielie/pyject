@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
 from pyject.types import ForwardRef
+
+T = TypeVar("T")
 
 
 class DuckInterface(ABC):
@@ -59,3 +62,25 @@ class Test2:
 
 def duck_d(squeak: QuackBehavior) -> DuckInterface:
     return DuckA(squeak)
+
+
+class GenericDuckInterface(Generic[T], ABC):
+    @abstractmethod
+    def quack(self):
+        raise NotImplementedError()
+
+
+class DuckA2(GenericDuckInterface):
+    def __init__(self, squeak: QuackBehavior):
+        self._quack_behavior = squeak
+
+    def quack(self):
+        return self._quack_behavior.quack()
+
+
+class DuckB2(GenericDuckInterface):
+    def __init__(self, squeak: QuackBehavior):
+        self._quack_behavior = squeak
+
+    def quack(self):
+        return self._quack_behavior.quack()
