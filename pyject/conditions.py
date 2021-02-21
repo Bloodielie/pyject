@@ -1,4 +1,3 @@
-import sys
 from typing import List, Any, Optional, Dict, Iterator, Sequence, NoReturn, get_args
 
 from pyject.base import BaseCondition
@@ -13,19 +12,6 @@ class DefaultCondition(BaseCondition):
 
     def handle(self, typing: Any) -> Dict[str, Any]:
         for dependency in self._resolver.get_resolved_dependencies(typing):
-            return dependency
-
-        raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
-
-
-class GenericCondition(BaseCondition):
-    def check_typing(self, typing: Any) -> bool:
-        if not get_typing_args(typing):
-            return False
-        return True
-
-    def handle(self, typing: Any) -> Dict[str, Any]:
-        for dependency in self._resolver.get_resolved_dependencies((typing, get_args(typing))):
             return dependency
 
         raise DependencyResolvingException(f"There is no such dependency in the container {typing}")
@@ -111,5 +97,22 @@ class ForwardRefCondition(BaseCondition):
 
     def handle(self, typing: Any) -> ForwardRef:
         forward_ref = typing(self._resolver, self._dependency_storage)
-        forward_ref._ForwardRef__set_generic_typing(forward_ref.__orig_class__.__args__[0])
+        typing_args = get_typing_args(typing)
+        if not typing_args:
+            raise Exception("It is necessary to transfer the generic to Forwardref")
+
+        forward_ref._ForwardRef__set_generic_typing(typing_args[0])
         return forward_ref
+
+
+class GenericCondition(BaseCondition):
+    def check_typing(self, typing: Any) -> bool:
+        if not get_typing_args(typing):
+            return False
+        return True
+
+    def handle(self, typing: Any) -> Dict[str, Any]:
+        for dependency in self._resolver.get_resolved_dependencies((typing, get_args(typing))):
+            return dependency
+
+        raise DependencyResolvingException(f"There is no such dependency in the container {typing}")

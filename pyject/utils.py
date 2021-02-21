@@ -8,8 +8,6 @@ if sys.version_info == (3, 7):
 else:
     from typing import get_args
 
-T = TypeVar("T", bound="ContextInstanceMixin")
-
 
 def get_typing_args(typing):
     return get_args(typing)
@@ -35,7 +33,6 @@ if sys.version_info >= (3, 9):
         return False
 else:
     _collection_typing_name = {"Set", "List", "Tuple", "FrozenSet", "Sequence"}
-
 
     def check_collection_typing(annotation: Any) -> bool:
         annotation_type_name = getattr(annotation, "_name", None)
@@ -82,6 +79,9 @@ def check_union_typing(annotation: Any) -> bool:
     if origin is not None and origin is Union:
         return True
     return False
+
+
+T = TypeVar("T", bound="ContextInstanceMixin")
 
 
 class ContextInstanceMixin:
