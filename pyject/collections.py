@@ -1,4 +1,3 @@
-from contextvars import ContextVar
 from typing import List, Optional, Any, Union, Type, Dict, Iterator
 
 from pyject.exception import DependencyNotFound
@@ -20,6 +19,19 @@ def _get_dependency_wrapper(annotation: Any, implementation: Any, scope: Union[S
         cache=implementation if annotations is None else None,
         type_arguments=type_args
     )
+
+
+def _checking_for_finding_itself_in_annotations(wrapper: DependencyWrapper) -> None:
+    error = Exception("Dependency cannot have itself in annotations")
+    if not wrapper.type_arguments and wrapper.annotations is not None:
+        for annotation in wrapper.annotations:
+            annotation_args = get_typing_args(annotation[1])
+            if not annotation_args and annotation[1] == wrapper.type_:
+                raise error
+            else:
+                for annotation_arg in annotation_args:
+                    if annotation_arg == wrapper.type_:
+                        raise error
 
 
 class DependencyStorageOverrideContext:
@@ -58,13 +70,16 @@ class DependencyStorage:
     def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
         wrapper = _get_dependency_wrapper(annotation, implementation, scope)
 
-        type_args = get_typing_args(annotation)
-        if type_args:
-            annotation = (annotation, type_args)
+        if wrapper.type_arguments:
+            dependency_alias = (annotation, wrapper.type_arguments)
+        else:
+            dependency_alias = annotation
 
-        dependency = self._dependencies.get(annotation, None)
+        _checking_for_finding_itself_in_annotations(wrapper)
+
+        dependency = self._dependencies.get(dependency_alias, None)
         if dependency is None:
-            self._dependencies[annotation] = [wrapper]
+            self._dependencies[dependency_alias] = [wrapper]
         else:
             dependency.append(wrapper)
 
