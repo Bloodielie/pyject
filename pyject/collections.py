@@ -67,13 +67,11 @@ class DependencyStorage:
     def __init__(self):
         self._dependencies: Dict[Any, List[DependencyWrapper]] = {}
 
-    def add(self, annotation: Any, implementation: Any, scope: Union[Scope, int]) -> None:
-        wrapper = _get_dependency_wrapper(annotation, implementation, scope)
-
+    def _add_dependency(self, wrapper: DependencyWrapper) -> None:
         if wrapper.type_arguments:
-            dependency_alias = (annotation, wrapper.type_arguments)
+            dependency_alias = (wrapper.type_, wrapper.type_arguments)
         else:
-            dependency_alias = annotation
+            dependency_alias = wrapper.type_
 
         _checking_for_finding_itself_in_annotations(wrapper)
 
@@ -82,6 +80,26 @@ class DependencyStorage:
             self._dependencies[dependency_alias] = [wrapper]
         else:
             dependency.append(wrapper)
+
+    def add_transient(self, annotation: Any, implementation: Any) -> None:
+        self._add_dependency(
+            _get_dependency_wrapper(annotation, implementation, Scope.TRANSIENT)
+        )
+
+    def add_singleton(self, annotation: Any, implementation: Any) -> None:
+        self._add_dependency(
+            _get_dependency_wrapper(annotation, implementation, Scope.SINGLETON)
+        )
+
+    def add_context(self, annotation: Any, implementation: Any) -> None:
+        self._add_dependency(
+            _get_dependency_wrapper(annotation, implementation, Scope.CONTEXT)
+        )
+
+    def add_constant(self, annotation: Any, implementation: Any) -> None:
+        wrapper = _get_dependency_wrapper(annotation, implementation, Scope.SINGLETON)
+        wrapper.cache = implementation
+        self._add_dependency(wrapper)
 
     def override(
         self,

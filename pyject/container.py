@@ -3,7 +3,6 @@ from typing import Any, List, TypeVar, Type, Optional, Dict, Union, Callable, Aw
 
 from pyject.base import IContainer
 from pyject.exception import DependencyNotFound, DependencyResolvingException
-from pyject.models import Scope
 from pyject.collections import DependencyStorage, DependencyStorageOverrideContext
 from pyject.resolver import Resolver
 from pyject.annotations import get_annotations_to_implementation
@@ -28,19 +27,19 @@ class Container(IContainer, ContextInstanceMixin):
 
     def add_singleton(self, annotation: Any, implementation: Any) -> None:
         """Add a class that will be initialized once when added"""
-        self._dependency_storage.add(annotation, implementation, Scope.SINGLETON)
+        self._dependency_storage.add_singleton(annotation, implementation)
 
     def add_constant(self, annotation: Any, implementation: Any) -> None:
         """Adds an object that does not need to be initialized"""
-        self._dependency_storage.add(annotation, implementation, Scope.SINGLETON)
+        self._dependency_storage.add_constant(annotation, implementation)
 
     def add_transient(self, annotation: Any, implementation: Any) -> None:
         """Add a class that will be initialized with each request"""
-        self._dependency_storage.add(annotation, implementation, Scope.TRANSIENT)
+        self._dependency_storage.add_transient(annotation, implementation)
 
     def add_context(self, annotation: Any, implementation: Any) -> None:
         """Add a class/object that can only be retrieved in the same context"""
-        self._dependency_storage.add(annotation, implementation, Scope.CONTEXT)
+        self._dependency_storage.add_context(annotation, implementation)
 
     @overload
     def get(self, annotation: Type[T]) -> T:
