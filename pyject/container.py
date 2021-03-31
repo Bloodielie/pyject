@@ -1,5 +1,5 @@
 import sys
-from typing import Any, List, TypeVar, Type, Optional, Dict, Union, Callable, Awaitable, overload, Iterator
+from typing import Any, List, TypeVar, Type, Optional, Dict, Union, Callable, Awaitable, overload
 
 from pyject.base import IContainer
 from pyject.exception import DependencyNotFound, DependencyResolvingException
@@ -25,20 +25,28 @@ class Container(IContainer, ContextInstanceMixin):
         self.add_constant(Container, self)
         self.set_current(self)
 
-    def add_singleton(self, annotation: Any, implementation: Any) -> None:
+    def add_singleton(self, annotation: Any, implementation: Any = None) -> None:
         """Add a class that will be initialized once when added"""
+        if implementation is None:
+            implementation = annotation
         self._dependency_storage.add_singleton(annotation, implementation)
 
-    def add_constant(self, annotation: Any, implementation: Any) -> None:
+    def add_constant(self, annotation: Any, implementation: Any = None) -> None:
         """Adds an object that does not need to be initialized"""
+        if implementation is None:
+            implementation = annotation
         self._dependency_storage.add_constant(annotation, implementation)
 
-    def add_transient(self, annotation: Any, implementation: Any) -> None:
+    def add_transient(self, annotation: Any, implementation: Any = None) -> None:
         """Add a class that will be initialized with each request"""
+        if implementation is None:
+            implementation = annotation
         self._dependency_storage.add_transient(annotation, implementation)
 
-    def add_context(self, annotation: Any, implementation: Any) -> None:
+    def add_context(self, annotation: Any, implementation: Any = None) -> None:
         """Add a class/object that can only be retrieved in the same context"""
+        if implementation is None:
+            implementation = annotation
         self._dependency_storage.add_context(annotation, implementation)
 
     @overload
