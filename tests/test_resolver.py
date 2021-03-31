@@ -14,10 +14,10 @@ def dependency_storage():
 
 @fixture()
 def resolver(dependency_storage):
-    dependency_storage.add(QuackBehavior, Sqeak, Scope.TRANSIENT)
-    dependency_storage.add(DuckInterface, DuckA, Scope.TRANSIENT)
-    dependency_storage.add(DuckInterface, DuckB, Scope.TRANSIENT)
-    dependency_storage.add(DuckInterface, DuckC, Scope.TRANSIENT)
+    dependency_storage.add_transient(QuackBehavior, Sqeak)
+    dependency_storage.add_transient(DuckInterface, DuckA)
+    dependency_storage.add_transient(DuckInterface, DuckB)
+    dependency_storage.add_transient(DuckInterface, DuckC)
     return Resolver(dependency_storage)
 
 
